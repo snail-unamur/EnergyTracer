@@ -15,3 +15,7 @@ class AbstractEnergyProfiler(ABC):
     @abstractmethod
     def measure_once(self, label: str, fn) -> dict:
         pass
+
+    def finalize(self):
+        '''Optional post-processing after all iterations. Override if needed.'''
+        pass

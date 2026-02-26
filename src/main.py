@@ -6,41 +6,35 @@ from measure.macEnergyProfiler import EnergyProfiler as macEnergyProfiler
 from utilities.save_CSV import save_history
 from plot.generate_plot import compare_histories
 
+def run_profiling(energy_profiler_cls, src_file, label):
+    '''Run energy profiling on a source file and return the measurement history.'''
+    print(f"Running code {label}")
+    print("-" * (len(f"Running code {label}")))
+
+    code = open(src_file).read()
+    monitor = energy_profiler_cls()
+    try:
+        for i in range(args.iter):
+            monitor.measure_once(f"iter_{i}", lambda: exec(code))
+        print(f"Energy profiling for code {label} completed.")
+    except KeyboardInterrupt:
+        print(f"Energy profiling for code {label} interrupted by user.")
+
+    monitor.finalize()
+    return monitor.history
+
 def main(args, energy_profiler_cls):
-    print("Starting energy profiler")
-    print("------------------------")
+    msg = f"Starting energy profiler"
+    print(msg)
+    print("-" * len(msg))
     print(f"Energy profiler: {args.profiler}")
     print(f"Number of iterations: {args.iter}")
     print(f"Source file with code smell: {args.src_file_1}")
     print(f"Source file without code smell: {args.src_file_2}\n")
 
-    print("\tRunning code with the code smell")
-    print("\t--------------------------------")
-
-    code1 = open(args.src_file_1).read()
-    monitor1 = energy_profiler_cls()
-    try:
-        for i in range(args.iter):
-            monitor1.measure_once(f"iter_{i}", lambda: exec(code1))
-        print("\tEnergy profiling for code with code smell completed.\n")
-    except KeyboardInterrupt:
-        print("\tEnergy profiling for code with code smell interrupted by user.\n")
-    
-    first_history = monitor1.history
-
-    print("\n\tRunning code without the code smell")
-    print("\t-------------------------------------")
-
-    code2 = open(args.src_file_2).read()
-    monitor2 = energy_profiler_cls()
-    try:
-        for i in range(args.iter):
-            monitor2.measure_once(f"iter_{i}", lambda: exec(code2))
-        print("\tEnergy profiling for code without code smell completed.\n")
-    except KeyboardInterrupt:
-        print("\tEnergy profiling for code without code smell interrupted by user.\n")
-    
-    second_history = monitor2.history
+    first_history = run_profiling(energy_profiler_cls, args.src_file_1, "with the code smell")
+    print()
+    second_history = run_profiling(energy_profiler_cls, args.src_file_2, "without the code smell")
 
     print("Energy profiling completed.")
 

@@ -38,3 +38,7 @@ class EnergyProfiler(AbstractEnergyProfiler):
         }
         self.history.append(entry)
         return entry
+
+    def finalize(self):
+        '''No post-processing needed for Zeus — data is already per-iteration.'''
+        pass
