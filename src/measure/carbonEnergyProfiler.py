@@ -1,4 +1,4 @@
-from codecarbon import EmissionsTracker
+from codecarbon import OfflineEmissionsTracker
 from measure.abstractEnergyProfiler import AbstractEnergyProfiler
 
 KWH_TO_MJ = 3_600_000_000 # 1 kWh = 3.6 MJ = 3.6e9 mJ
@@ -9,10 +9,26 @@ class EnergyProfiler(AbstractEnergyProfiler):
 
     Each call to measure_once wraps a single code execution in a measurement window,
     collecting energy metrics per iteration and storing them in a history list.
+
+    The tracker is instantiated once and reused across iterations to avoid 
+    per-iteration overhead.
     '''
 
     def __init__(self):
         self.history = []
+
+        self._tracker = OfflineEmissionsTracker(
+            project_name="energy_profiling",
+            country_iso_code="BEL",
+            save_to_file=False,
+            log_level="error",
+        )
+        
+        # Track cumulative energy so we can compute per-iteration deltas
+        self._prev_cpu_kwh = 0.0
+        self._prev_gpu_kwh = 0.0
+        self._prev_ram_kwh = 0.0
+        self._prev_emissions = 0.0
 
     def measure_once(self, label: str, fn) -> dict:
         '''
@@ -32,22 +48,30 @@ class EnergyProfiler(AbstractEnergyProfiler):
         ane_mj holds CO2 equivalent emissions in grams (g CO2eq),
         as CodeCarbon has no Apple Neural Engine equivalent.
         '''
-        tracker = EmissionsTracker(
-            project_name=label,
-            save_to_file=False,
-            log_level="error",
-        )
-        tracker.start()
+        self._tracker.start()
         fn()
-        tracker.stop()
+        self._tracker.stop()
 
-        data = tracker.final_emissions_data
+        data = self._tracker.final_emissions_data
+
+        # Compute per-iteration deltas from cumulative values
+        cpu_kwh = (data.cpu_energy or 0.0)
+        gpu_kwh = (data.gpu_energy or 0.0)
+        ram_kwh = (data.ram_energy or 0.0)
+        emissions = (data.emissions or 0.0)
+
         entry = {
             "i": len(self.history),
-            "cpu_mj": (data.cpu_energy or 0.0) * KWH_TO_MJ,
-            "gpu_mj": (data.gpu_energy or 0.0) * KWH_TO_MJ,
-            "ane_mj": (data.emissions or 0.0) * 1_000,
-            "dram_mj": (data.ram_energy or 0.0) * KWH_TO_MJ,
+            "cpu_mj": (cpu_kwh - self._prev_cpu_kwh) * KWH_TO_MJ,
+            "gpu_mj": (gpu_kwh - self._prev_gpu_kwh) * KWH_TO_MJ,
+            "ane_mj": (emissions - self._prev_emissions) * 1_000,
+            "dram_mj": (ram_kwh - self._prev_ram_kwh) * KWH_TO_MJ,
         }
+
+        self._prev_cpu_kwh = cpu_kwh
+        self._prev_gpu_kwh = gpu_kwh
+        self._prev_ram_kwh = ram_kwh
+        self._prev_emissions = emissions
+
         self.history.append(entry)
         return entry
