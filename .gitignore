@@ -13,3 +13,6 @@ wheels/
 .DS_Store
 
 output/*
+
+# Exclude code under measurement
+src/python/*
