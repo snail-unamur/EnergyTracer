@@ -1,7 +1,7 @@
 EnergyTracer
 ============
 
-*A tool to measure the energy consumption of a MacOS computer per code iteration, comparing two variants of the same code.*
+*A tool to measure the energy consumption of a computer per code iteration, comparing two variants of the same code.*
 
 ---
 
