@@ -1,36 +1,72 @@
 EnergyTracer
 ============
 
-*A tool to measure the energy consumption of a computer per code iteration, comparing two variants of the same code.*
-
----
+*Measure it all, from energy consumption to environmental impact*
 
 ## Description
 
-This small project is a tool to measure the energy consumption of a computer while executing a specific code. It supports two measurement backends and collects energy metrics (CPU, GPU, ANE, DRAM) for each individual iteration of the code. The results are then plotted using `matplotlib` to compare the energy consumption per iteration between two code variants — typically one implementing a code smell (or a specific pattern) and one without.
+Have you ever wondered how much energy your code consumes? How to optimize it for better energy efficiency? Or how it impacts the environment? EnergyTracer is here to help you answer these questions, and more! This tool allows you to measure the energy consumption of your code, compare different implementations, and even estimate the CO₂ emissions associated with running your code. Sounds great, right?
 
-## Supported Profilers
+## Profilers
 
-| Profiler | Library | Method | Best for |
-|---|---|---|---|
-| `mac-silicon` | `zeus_apple_silicon` | Reads Apple Silicon **hardware power counters** directly (IOKit) | Accurate absolute energy values **on M-series Macs** |
-| `carbon` | `codecarbon` | **Software model** — estimates power from CPU TDP, utilization, and time | CO₂ emission estimates; better suited **for x86** with Intel RAPL |
+To enable accurate energy measurements, EnergyTracer supports various profilers that can be used to collect energy metrics. Here is a table summarizing the supported profilers:
+| Profiler | Library | Method | Hardware | Precision | Best for |
+|---|---|---|---|:---:|---|
+| `mac-silicon` | `zeus_apple_silicon` | Reads Apple Silicon **hardware power counters** directly (IOKit) | **Apple M-series only** | ⭐⭐⭐ | Accurate absolute energy measurement on M-series Macs; fine-grained profiling of code blocks |
+| `carbon` | `codecarbon` | **Software model**: estimates power from CPU TDP, utilization, and time | **Cross-platform** | ⭐⭐ | CO₂ emission reports; long-running workloads; multi-platform projects or mixed hardware |
 
-> **Note on measurement differences:** The two backends will report different absolute values for the same workload (e.g. Zeus may report ~600 mJ where CodeCarbon reports ~200 mJ). This is expected because they use fundamentally different measurement methods. However, the **ratio** between two code variants remains consistent across backends, so both are valid for **relative** comparison.
+> **Note on measurement differences:** The different profilers will report different values for the exact same workload. This is expected because they use fundamentally different measurement methods.
+>
+> **Further improvements:** It is not excluded that, in the future, support for additional profilers may be added. The modular design of EnergyTracer allows for easy integration of new measurement backends.
+
+### Mac Silicon (Zeus)
+
+The `mac-silicon` profiler reads energy data directly from Apple Silicon hardware counters via IOKit, Apple's private kernel framework. This gives sub-millisecond, per-component accuracy without requiring `sudo` or any background daemon.
+
+The following metrics are collected over time:
+
+- **CPU**: energy consumed by all CPU clusters (E-cores and P-cores)
+- **GPU**: energy consumed by the integrated GPU
+- **ANE**: energy consumed by the Apple Neural Engine
+- **DRAM**: energy consumed by unified memory
+
+All metrics are measured in millijoules (mJ).
+
+### CodeCarbon
+
+The `carbon` profiler uses a software estimation model: it samples CPU utilization and maps it against the processor's thermal design power (TDP) to estimate electricity consumption, then converts it to CO₂ equivalent using the carbon intensity of your region.
+
+The following metrics are collected over time:
+
+- **CPU**: estimated energy from CPU TDP and utilization
+- **GPU**: estimated energy from GPU utilization (if supported)
+- **DRAM**: estimated energy based on memory usage
+- **gCO₂**: estimated CO₂ emissions based on energy consumption and regional carbon intensity. This measure replaces the `ANE` metric since CodeCarbon does not have access to the Apple Neural Engine's energy data.
+
+All energy metrics are estimated in millijoules (mJ), and CO₂ emissions are estimated in milligrams of CO₂ equivalent (mgCO₂e).
 
 ## Usage
 
-This project is designed to be easy to use. To perform this, `uv` is used to manage the Python environment and dependencies. Once `uv` is installed on your system, you can follow these steps:
+To use EnergyTracer, you need to have Python installed on your system. The project uses `uv` to manage the Python environment and dependencies. Once you have `uv` installed, you can follow these steps:
 
 ```shell
 # Initialize the project (install dependencies)
 ./init.sh
+```
 
-# Run the energy tracer
+It is as simple as that! The `init.sh` script will set up and install all the necessary dependencies in a dedicated virtual environment managed by `uv`. After running this command, you will be ready to run the tool and start measuring the energy consumption of your code.
+
+To run the EnergyTracer, you can use the following command:
+
+```shell
 uv run src/main.py
 ```
 
-This will execute the `main.py` script, which will measure the energy consumption of the default code variants and plot the results. To customize the code variants and metrics, you can use command-line arguments as follows:
+This command will execute the `main.py` script, which will measure the energy consumption of the default code variants (located in `src/python/file_with_code_smell.py` and `src/python/file_without_code_smell.py`) and plot the results.
+
+### CLI Arguments
+
+For more control over the measurement process, you can use the following command-line arguments:
 
 | Flag | Description | Default |
 |---|---|---|
@@ -43,55 +79,42 @@ This will execute the `main.py` script, which will measure the energy consumptio
 | `--shuffle` | Randomize execution order of code variants to mitigate temporal effects | off |
 | `-v`, `--verbose` | Enable verbose output during profiling | off |
 
-### Example
+Here is an example of how to use these arguments:
 
 ```shell
-# Compare two files for 500 iterations using the Zeus Apple Silicon profiler, with shuffling and verbose output
-uv run src/main.py -p mac-silicon -n 500 --shuffle -v \
-  -f1 src/python/file_with_code_smell.py \
-  -f2 src/python/file_without_code_smell.py
+# Compare two files for 500 iterations using the Zeus Apple Silicon profiler, 
+# with shuffling and verbose output
+uv run src/main.py -p mac-silicon -n 500 --shuffle -v
 ```
 
-As you can specify the source files, you can easily compare the energy consumption of different code variants, allowing you to identify which one is more energy-efficient. By default, the tool will compare a code located in `src/python/file_with_code_smell.py` with another code located in `src/python/file_without_code_smell.py`, but you can change these paths to compare any two Python scripts you want.
+All the generated data will be saved in the `output/{profiler}/{output_dir}` directory, where `{profiler}` is the name of the profiler used (e.g., `mac-silicon` or `carbon`) and `{output_dir}` is the value of the `--output-dir` argument (default is `output`).
 
-The generated plots are saved in the `output` directory.
+### Outputs
+
+EnergyTracer generates two main types of outputs:
+
+1. **Plots**: For each energy metric (CPU, GPU, ANE/gCO₂, DRAM), a plot is generated comparing the two code variants across iterations. These plots are saved as PNG files in the output directory. In addition to the per-metric plots, an overall comparison plot is also generated, showing all metrics together for a comprehensive view of energy consumption differences.
+2. **CSV Files**: The raw energy data collected during the measurements is saved in CSV format for further analysis. Each row corresponds to an iteration, and columns include the iteration index and energy values for each metric (CPU, GPU, ANE/CO₂, DRAM). This allows you to perform your own custom analysis or create additional visualizations as needed.
 
 ### Automated Measurement Script
 
-For reproducible benchmarks, use `start_measurement.sh`. It automates a full measurement session with warm-up and cooldown periods:
+To facilitate repeated measurements and comparisons, a shell script named `run_experiment.sh` is provided. This script automates what would be a complex manual process of running the measurements with multiple phases (e.g., warm-up, measurement, cooldown) and ensures that the correct parameters are used consistently across runs. You can run this script as follows:
 
 ```shell
-./start_measurement.sh
+./run_experiment.sh
 ```
 
-The script performs:
-1. **Warm-up phase** — 10 quick iterations with both profilers to stabilize the system.
-2. **Measurement phase** — 30 iterations (100 code runs each) with both profilers, separated by 1-minute cooldown periods to minimize thermal effects.
+The script performs the following steps:
 
-Execution order is shuffled (`--shuffle`) to further reduce temporal bias. Progress is displayed via a terminal progress bar.
+1. **Warm-up phases**: It runs 10 iterations of all profilers to stabilize the system and mitigate any initial variability in measurements.
+2. **Measurement phases**: It runs 30 iterations of measurements for each profiler, with 1000 iterations of the code under test in each measurement phase. 
+3. **Cooldown periods**: Between measurement phases, it includes a cooldown period of a minute to allow the system to return to baseline conditions and minimize thermal effects on measurements.
 
-To ensure reproducibility, please set your system properly before running the script. I personally refer to this [guide](https://luiscruz.github.io/2021/10/10/scientific-guide.html) to set up a good environment for reproducible measurements.
+To further reduce temporal bias, the execution order of code variants is randomized in each iteration using the `--shuffle` flag. The script also provides a terminal progress bar to indicate the current phase and iteration, giving you real-time feedback on the measurement process.
 
-## Project Structure
-
-```
-init.sh                              # Project initialization script (uv sync)
-start_measurement.sh                 # Automated measurement with warm-up & cooldown
-src/
-├── main.py                          # Entry point & CLI argument parsing
-├── measure/
-│   ├── abstractEnergyProfiler.py    # Abstract base class for profilers
-│   ├── macEnergyProfiler.py         # Zeus Apple Silicon backend
-│   └── carbonEnergyProfiler.py      # CodeCarbon backend (OfflineEmissionsTracker)
-├── plot/
-│   ├── generate_plot.py             # Comparison plot generation
-│   └── utilities/                   # Metrics extraction & padding helpers
-├── python/
-│   ├── file_with_code_smell.py      # Default code variant A
-│   └── file_without_code_smell.py   # Default code variant B
-└── utilities/
-    └── save_CSV.py                  # CSV export for measurement histories
-```
+> **Important note on reproducibility**: The results of energy measurements can be affected by various factors such as background processes, thermal conditions, network activity, and more. To ensure that your measurements are as reproducible as possible, it is recommended to set up your system in a consistent state before running the measurements. For more details on how to achieve this, you can refer to this [guide](https://luiscruz.github.io/2021/10/10/scientific-guide.html) that provides best practices for setting up a good environment for reproducible measurements. 
+> 
+> Note that while the `run_experiment.sh` script runs, it is advisable to avoid using the system for any other tasks to minimize interference with the measurements.
 
 ## Author
 
@@ -99,4 +122,4 @@ Florian Stormacq - [GitHub](https://github.com/fstormacq)
 
 ## Acknowledgements
 
-This project was developed as part of the Master 1 Computer Science program at the University of Namur, Belgium.
+This project was developed as part of a Master degree in Computer Science at the University of Namur, Belgium.
