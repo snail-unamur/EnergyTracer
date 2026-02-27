@@ -1,7 +1,19 @@
 #!/usr/bin/env sh
 
-# ── Helpers ──────────────────────────────────────────────────
+# Configuration
+
 BAR_WIDTH=30
+
+WARMUP_RUNS=10          # Number of warm-up iterations
+WARMUP_N=500            # Code iterations per warm-up run
+
+MEASURE_RUNS=30         # Number of measurement iterations
+MEASURE_N=1000          # Code iterations per measurement run
+COOLDOWN=60             # Sleep duration (seconds) between measurements
+
+OUTPUT_DIR="output"
+
+# Helpers
 
 # Displays a progress bar in the terminal.
 # Author : Claude Opus 4.6
@@ -33,48 +45,48 @@ step() {
     echo ""
 }
 
-# ── Start ────────────────────────────────────────────────────
+# Start
 section "Energy Measurement"
 echo "⚠️  Do not interrupt — results may be incomplete."
 
 # 1. Warm-up phase
-step "Phase 1: Warm-up (10 iterations x 2 profilers)"
+step "Phase 1: Warm-up ($WARMUP_RUNS iterations x 2 profilers)"
 
-WARMUP_TOTAL=$((10 * 2))
-for i in $(seq 1 10); do
-    uv run src/main.py -p carbon -n 500 -o warmup-$i --shuffle
+WARMUP_TOTAL=$(( WARMUP_RUNS * 2 ))
+for i in $(seq 1 $WARMUP_RUNS); do
+    uv run src/main.py -p carbon -n $WARMUP_N -o warmup-$i --shuffle
     progress_bar $((i * 2 - 1)) "$WARMUP_TOTAL" "Warm-up"
 
-    uv run src/main.py -p mac-silicon -n 500 -o warmup-$i --shuffle
+    uv run src/main.py -p mac-silicon -n $WARMUP_N -o warmup-$i --shuffle
     progress_bar $((i * 2)) "$WARMUP_TOTAL" "Warm-up"
 
 done
 printf "\r  Warm-up %*s\n" $((BAR_WIDTH + 20)) ""
 echo "  ✅ Warm-up complete."
 
-if [ -d "output/" ]; then
-    rm -rf output/
+if [ -d "$OUTPUT_DIR/" ]; then
+    rm -rf "$OUTPUT_DIR/"
 fi
 
 # 2. Measurement phase
-step "Phase 2: Measurement (30 iterations x 2 profilers - with cooldown periods of 1 min)"
+step "Phase 2: Measurement ($MEASURE_RUNS iterations x 2 profilers - with cooldown periods of $((COOLDOWN / 60)) min)"
 
-MEASURE_TOTAL=$((2 * 30))
-for i in $(seq 1 30); do
+MEASURE_TOTAL=$(( MEASURE_RUNS * 2 ))
+for i in $(seq 1 $MEASURE_RUNS); do
 
-    # Sleep a minute between each measurement to allow the system to cool down and stabilize.
-    sleep 60
+    # Sleep between each measurement to allow the system to cool down and stabilize.
+    sleep $COOLDOWN
 
-    uv run src/main.py -p carbon -n 1000 -o measure-$i --shuffle
+    uv run src/main.py -p carbon -n $MEASURE_N -o measure-$i --shuffle
     progress_bar $((i * 2 - 1)) "$MEASURE_TOTAL" "Measurement"
 
-    sleep 60
+    sleep $COOLDOWN
 
-    uv run src/main.py -p mac-silicon -n 1000 -o measure-$i --shuffle
+    uv run src/main.py -p mac-silicon -n $MEASURE_N -o measure-$i --shuffle
     progress_bar $((i * 2)) "$MEASURE_TOTAL" "Measurement"
 done
 printf "\r  Measurement %*s\n" $((BAR_WIDTH + 20)) ""
 echo "  ✅ Measurement complete."
 
 # 3. End
-step "All done! Results are in the 'output/' directory."
+step "All done! Results are in the '$OUTPUT_DIR/' directory."
