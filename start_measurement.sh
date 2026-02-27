@@ -42,10 +42,10 @@ step "Phase 1: Warm-up (10 iterations x 2 profilers)"
 
 WARMUP_TOTAL=$((10 * 2))
 for i in $(seq 1 10); do
-    uv run src/main.py -p carbon -n 1 -o warmup-$i --shuffle
+    uv run src/main.py -p carbon -n 500 -o warmup-$i --shuffle
     progress_bar $((i * 2 - 1)) "$WARMUP_TOTAL" "Warm-up"
 
-    uv run src/main.py -p mac-silicon -n 1 -o warmup-$i --shuffle
+    uv run src/main.py -p mac-silicon -n 500 -o warmup-$i --shuffle
     progress_bar $((i * 2)) "$WARMUP_TOTAL" "Warm-up"
 
 done
@@ -65,12 +65,12 @@ for i in $(seq 1 30); do
     # Sleep a minute between each measurement to allow the system to cool down and stabilize.
     sleep 60
 
-    uv run src/main.py -p carbon -n 100 -o measure-$i --shuffle
+    uv run src/main.py -p carbon -n 1000 -o measure-$i --shuffle
     progress_bar $((i * 2 - 1)) "$MEASURE_TOTAL" "Measurement"
 
     sleep 60
 
-    uv run src/main.py -p mac-silicon -n 100 -o measure-$i --shuffle
+    uv run src/main.py -p mac-silicon -n 1000 -o measure-$i --shuffle
     progress_bar $((i * 2)) "$MEASURE_TOTAL" "Measurement"
 done
 printf "\r  Measurement %*s\n" $((BAR_WIDTH + 20)) ""
@@ -78,5 +78,3 @@ echo "  ✅ Measurement complete."
 
 # 3. End
 step "All done! Results are in the 'output/' directory."
-
-EOF
