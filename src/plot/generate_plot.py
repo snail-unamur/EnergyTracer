@@ -5,6 +5,12 @@ import matplotlib.pyplot as plt
 from plot.utilities.padding import pad
 from plot.utilities.metrics_extractors import extract_metrics
 
+# Plot configuration
+FIGURE_SIZE    = (10, 6)
+FIGURE_DPI     = 300
+LEGEND_FONTSIZE = "small"
+PLOTS_SUBDIR   = "plots"
+
 def compare_histories(history1, history2, profiler: str = "carbon", directory: str = "output"):
     '''
     Creates pandas diagrams to compare the energy metrics collected from two different code executions.
@@ -49,7 +55,7 @@ def compare_histories(history1, history2, profiler: str = "carbon", directory: s
     })
 
     # Create output directory if it doesn't exist
-    output_dir = os.path.join(directory, "plots")
+    output_dir = os.path.join(directory, PLOTS_SUBDIR)
     os.makedirs(output_dir, exist_ok=True)
 
     # Plotting
@@ -61,7 +67,7 @@ def compare_histories(history1, history2, profiler: str = "carbon", directory: s
 
     
 def plot_all_metrics(df: pd.DataFrame, filename: str, ane_label: str = "ANE"):
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=FIGURE_SIZE)
     plt.plot(df["Iteration"], df["CPU with code smell"], label="CPU with code smell")
     plt.plot(df["Iteration"], df["CPU without code smell"], label="CPU without code smell")
 
@@ -77,13 +83,13 @@ def plot_all_metrics(df: pd.DataFrame, filename: str, ane_label: str = "ANE"):
     plt.xlabel("Iteration")
     plt.ylabel("Energy (mJ)")
     plt.title("Energy Consumption Comparison")
-    plt.legend(fontsize="small")
+    plt.legend(fontsize=LEGEND_FONTSIZE)
     plt.grid(True)
-    plt.savefig(filename, dpi=300)
+    plt.savefig(filename, dpi=FIGURE_DPI)
     plt.close()
 
 def plot_specific_metrics(df: pd.DataFrame, metric: str, filename: str, unit: str = "mJ"):
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=FIGURE_SIZE)
 
     for variant in ["with code smell", "without code smell"]:
         col = f"{metric.upper()} {variant}"
@@ -94,7 +100,7 @@ def plot_specific_metrics(df: pd.DataFrame, metric: str, filename: str, unit: st
     plt.xlabel("Iteration")
     plt.ylabel(f"{metric.upper()} ({unit})")
     plt.title(f"{metric.upper()} Consumption Comparison")
-    plt.legend(fontsize="small")
+    plt.legend(fontsize=LEGEND_FONTSIZE)
     plt.grid(True)
-    plt.savefig(filename, dpi=300)
+    plt.savefig(filename, dpi=FIGURE_DPI)
     plt.close()

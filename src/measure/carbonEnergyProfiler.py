@@ -6,7 +6,13 @@ from measure.abstractEnergyProfiler import AbstractEnergyProfiler
 # Silence all CodeCarbon logs below ERROR (info, warning, debug)
 logging.getLogger("codecarbon").setLevel(logging.ERROR)
 
-KWH_TO_MJ = 3_600_000_000 # 1 kWh = 3.6 MJ = 3.6e9 mJ
+# Conversion factors
+KWH_TO_MJ = 3_600_000_000   # 1 kWh = 3.6 MJ = 3.6e9 mJ
+G_TO_MG   = 1_000           
+
+# Tracker configuration
+PROJECT_NAME     = "energy_profiling"
+COUNTRY_ISO_CODE = "BEL"
 
 class EnergyProfiler(AbstractEnergyProfiler):
     '''
@@ -25,8 +31,8 @@ class EnergyProfiler(AbstractEnergyProfiler):
         self.verbose = verbose
 
         self._tracker = OfflineEmissionsTracker(
-            project_name="energy_profiling",
-            country_iso_code="BEL",
+            project_name=PROJECT_NAME,
+            country_iso_code=COUNTRY_ISO_CODE,
             save_to_file=False,
             log_level="error",
         )
@@ -69,7 +75,7 @@ class EnergyProfiler(AbstractEnergyProfiler):
         total_cpu_mj  = (data.cpu_energy or 0.0) * KWH_TO_MJ
         total_gpu_mj  = (data.gpu_energy or 0.0) * KWH_TO_MJ
         total_ram_mj  = (data.ram_energy or 0.0) * KWH_TO_MJ
-        total_co2_mg  = (data.emissions  or 0.0) * 1_000
+        total_co2_mg  = (data.emissions  or 0.0) * G_TO_MG
 
         total_time = sum(self._durations)
         self.history = []
