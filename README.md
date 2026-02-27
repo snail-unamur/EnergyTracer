@@ -1,6 +1,10 @@
 EnergyTracer
 ============
 
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+---
+
 *Measure it all, from energy consumption to environmental impact*
 
 ## Description
@@ -123,3 +127,9 @@ Florian Stormacq - [GitHub](https://github.com/fstormacq)
 ## Acknowledgements
 
 This project was developed as part of a Master degree in Computer Science at the University of Namur, Belgium.
+
+## License
+
+This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+© 2026 Florian Stormacq. You are free to use, share, and adapt this work for non-commercial purposes, as long as you give appropriate credit and distribute your contributions under the same license.
