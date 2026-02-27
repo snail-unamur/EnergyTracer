@@ -9,9 +9,10 @@ class EnergyProfiler(AbstractEnergyProfiler):
     collecting energy metrics per iteration and storing them in a history list.
     '''
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.monitor = AppleEnergyMonitor()
         self.history = []
+        self.verbose = verbose
 
     def measure_once(self, label: str, fn) -> dict:
         '''

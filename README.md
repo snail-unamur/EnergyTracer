@@ -23,8 +23,8 @@ This small project is a tool to measure the energy consumption of a computer whi
 This project is designed to be easy to use. To perform this, `uv` is used to manage the Python environment and dependencies. Once `uv` is installed on your system, you can follow these steps:
 
 ```shell
-# Install dependencies
-uv sync
+# Initialize the project (install dependencies)
+./init.sh
 
 # Run the energy tracer
 uv run src/main.py
@@ -40,21 +40,43 @@ This will execute the `main.py` script, which will measure the energy consumptio
 | `-f1`, `--src-file-1` | Path to the source file **with** the code smell | `src/python/file_with_code_smell.py` |
 | `-f2`, `--src-file-2` | Path to the source file **without** the code smell | `src/python/file_without_code_smell.py` |
 | `-o`, `--output-dir` | Directory to save generated plots and CSV files | `output` |
+| `--shuffle` | Randomize execution order of code variants to mitigate temporal effects | off |
+| `-v`, `--verbose` | Enable verbose output during profiling | off |
 
 ### Example
 
 ```shell
-# Compare two files for 500 iterations using the Zeus Apple Silicon profiler
-uv run src/main.py -p mac-silicon -n 500 -f1 src/python/file_with_code_smell.py -f2 src/python/file_without_code_smell.py
+# Compare two files for 500 iterations using the Zeus Apple Silicon profiler, with shuffling and verbose output
+uv run src/main.py -p mac-silicon -n 500 --shuffle -v \
+  -f1 src/python/file_with_code_smell.py \
+  -f2 src/python/file_without_code_smell.py
 ```
 
 As you can specify the source files, you can easily compare the energy consumption of different code variants, allowing you to identify which one is more energy-efficient. By default, the tool will compare a code located in `src/python/file_with_code_smell.py` with another code located in `src/python/file_without_code_smell.py`, but you can change these paths to compare any two Python scripts you want.
 
 The generated plots are saved in the `output` directory.
 
+### Automated Measurement Script
+
+For reproducible benchmarks, use `start_measurement.sh`. It automates a full measurement session with warm-up and cooldown periods:
+
+```shell
+./start_measurement.sh
+```
+
+The script performs:
+1. **Warm-up phase** — 10 quick iterations with both profilers to stabilize the system.
+2. **Measurement phase** — 30 iterations (100 code runs each) with both profilers, separated by 1-minute cooldown periods to minimize thermal effects.
+
+Execution order is shuffled (`--shuffle`) to further reduce temporal bias. Progress is displayed via a terminal progress bar.
+
+To ensure reproducibility, please set your system properly before running the script. I personally refer to this [guide](https://luiscruz.github.io/2021/10/10/scientific-guide.html) to set up a good environment for reproducible measurements.
+
 ## Project Structure
 
 ```
+init.sh                              # Project initialization script (uv sync)
+start_measurement.sh                 # Automated measurement with warm-up & cooldown
 src/
 ├── main.py                          # Entry point & CLI argument parsing
 ├── measure/

@@ -18,10 +18,11 @@ class EnergyProfiler(AbstractEnergyProfiler):
     to each iteration's duration, preserving per-iteration variance.
     '''
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.history = []
         self._durations = []
         self._started = False
+        self.verbose = verbose
 
         self._tracker = OfflineEmissionsTracker(
             project_name="energy_profiling",
@@ -57,7 +58,8 @@ class EnergyProfiler(AbstractEnergyProfiler):
         proportionally to each iteration's wall-clock duration.
         Must be called after all measure_once() calls are done.
         '''
-        print("Finalizing energy profiler and computing per-iteration metrics...")
+        if self.verbose:
+            print("Finalizing energy profiler and computing per-iteration metrics...")
 
         if self._started:
             self._tracker.stop()
