@@ -39,6 +39,7 @@ This will execute the `main.py` script, which will measure the energy consumptio
 | `-n`, `--iter` | Number of iterations for the code under measurement | `1000` |
 | `-f1`, `--src-file-1` | Path to the source file **with** the code smell | `src/python/file_with_code_smell.py` |
 | `-f2`, `--src-file-2` | Path to the source file **without** the code smell | `src/python/file_without_code_smell.py` |
+| `-o`, `--output-dir` | Directory to save generated plots and CSV files | `output` |
 
 ### Example
 

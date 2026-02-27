@@ -1,4 +1,4 @@
-import argparse
+import argparse, os
 
 from measure.carbonEnergyProfiler import EnergyProfiler as carbonEnergyProfiler
 from measure.macEnergyProfiler import EnergyProfiler as macEnergyProfiler
@@ -38,10 +38,12 @@ def main(args, energy_profiler_cls):
 
     print("Energy profiling completed.")
 
-    save_history(first_history, "history_with_smell.csv")
-    save_history(second_history, "history_without_smell.csv")
+    output_directory = os.path.join("output", args.profiler, args.output_dir)
 
-    compare_histories(first_history, second_history, profiler=args.profiler)
+    save_history(first_history, "history_with_smell.csv", directory=output_directory)
+    save_history(second_history, "history_without_smell.csv", directory=output_directory)
+
+    compare_histories(first_history, second_history, profiler=args.profiler, directory=output_directory)
 
 
 if __name__ == "__main__":
@@ -50,6 +52,7 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--iter", type=int, default=1_000, help="Number of iterations for the code under measurement. Default is 1000.")
     parser.add_argument("-f1", "--src-file-1", type=str, default="src/python/file_with_code_smell.py", help="Path to the source file with the code smell to measure. Default is 'src/python/file_with_code_smell.py'.")
     parser.add_argument("-f2", "--src-file-2", type=str, default="src/python/file_without_code_smell.py", help="Path to the source file without the code smell to measure. Default is 'src/python/file_without_code_smell.py'.")
+    parser.add_argument("-o", "--output-dir", type=str, default="output", help="Path to the output directory. Default is 'output'.")
 
     args = parser.parse_args()
 

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from plot.utilities.padding import pad
 from plot.utilities.metrics_extractors import extract_metrics
 
-def compare_histories(history1, history2, profiler: str = "carbon"):
+def compare_histories(history1, history2, profiler: str = "carbon", directory: str = "output"):
     '''
     Creates pandas diagrams to compare the energy metrics collected from two different code executions.
 
@@ -14,6 +14,7 @@ def compare_histories(history1, history2, profiler: str = "carbon"):
         history1: list of dicts containing energy metrics for the first code execution (with code smell).
         history2: list of dicts containing energy metrics for the second code execution (without code smell).
         profiler: "mac-silicon" for zeus_apple_silicon (ANE metric), "carbon" for CodeCarbon (CO2 metric).
+        directory: Directory where the generated plots will be saved.
 
     Notes
     -----
@@ -48,7 +49,7 @@ def compare_histories(history1, history2, profiler: str = "carbon"):
     })
 
     # Create output directory if it doesn't exist
-    output_dir = "output/plots"
+    output_dir = os.path.join(directory, "plots")
     os.makedirs(output_dir, exist_ok=True)
 
     # Plotting
