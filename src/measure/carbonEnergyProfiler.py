@@ -1,7 +1,7 @@
 import time
 import logging
 from codecarbon import OfflineEmissionsTracker
-from measure.abstractEnergyProfiler import AbstractEnergyProfiler
+from .abstractEnergyProfiler import AbstractEnergyProfiler
 
 # Silence all CodeCarbon logs below ERROR (info, warning, debug)
 logging.getLogger("codecarbon").setLevel(logging.ERROR)

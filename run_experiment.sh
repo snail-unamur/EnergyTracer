@@ -52,12 +52,12 @@ echo "⚠️  Do not interrupt — results may be incomplete."
 # 1. Warm-up phase
 step "Phase 1: Warm-up ($WARMUP_RUNS iterations x 2 profilers)"
 
-WARMUP_TOTAL=$(( WARMUP_RUNS * 2 ))
+WARMUP_TOTAL=$(( WARMUP_RUNS * 2))
 for i in $(seq 1 $WARMUP_RUNS); do
-    uv run src/main.py -p carbon -n $WARMUP_N -o warmup-$i --shuffle
+    uv run ET -p carbon -n $WARMUP_N -o warmup-$i --shuffle
     progress_bar $((i * 2 - 1)) "$WARMUP_TOTAL" "Warm-up"
 
-    uv run src/main.py -p mac-silicon -n $WARMUP_N -o warmup-$i --shuffle
+    uv run ET -p mac-silicon -n $WARMUP_N -o warmup-$i --shuffle
     progress_bar $((i * 2)) "$WARMUP_TOTAL" "Warm-up"
 
 done
@@ -77,12 +77,12 @@ for i in $(seq 1 $MEASURE_RUNS); do
     # Sleep between each measurement to allow the system to cool down and stabilize.
     sleep $COOLDOWN
 
-    uv run src/main.py -p carbon -n $MEASURE_N -o measure-$i --shuffle
+    uv run ET -p carbon -n $MEASURE_N -o measure-$i --shuffle
     progress_bar $((i * 2 - 1)) "$MEASURE_TOTAL" "Measurement"
 
     sleep $COOLDOWN
 
-    uv run src/main.py -p mac-silicon -n $MEASURE_N -o measure-$i --shuffle
+    uv run ET -p mac-silicon -n $MEASURE_N -o measure-$i --shuffle
     progress_bar $((i * 2)) "$MEASURE_TOTAL" "Measurement"
 done
 printf "\r  Measurement %*s\n" $((BAR_WIDTH + 20)) ""

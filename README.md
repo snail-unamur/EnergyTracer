@@ -61,14 +61,21 @@ It is as simple as that! The `init.sh` script will set up and install all the ne
 To run the EnergyTracer, you can use the following command:
 
 ```shell
-uv run src/main.py
+uv run EnergyTracer
+
+# or simply
+uv run ET
 ```
 
-This command will execute the `main.py` script, which will measure the energy consumption of the default code variants (located in `src/python/file_with_code_smell.py` and `src/python/file_without_code_smell.py`) and plot the results.
+This will execute the `EnergyTracer` entry point, which will measure the energy consumption of the default code variants and plot the results. 
 
-### CLI Arguments
+If you prefer to avoid using the `EnergyTracer` and `ET` aliases, you can directly run the `main.py` script with Python:
 
-For more control over the measurement process, you can use the following command-line arguments:
+```shell
+uv run -m src.main
+```
+
+To customize the code variants and metrics, you can use command-line arguments as follows:
 
 | Flag | Description | Default |
 |---|---|---|
@@ -86,7 +93,7 @@ Here is an example of how to use these arguments:
 ```shell
 # Compare two files for 500 iterations using the Zeus Apple Silicon profiler, 
 # with shuffling and verbose output
-uv run src/main.py -p mac-silicon -n 500 --shuffle -v
+uv run ET -p mac-silicon -n 500 --shuffle -v
 ```
 
 All the generated data will be saved in the `output/{profiler}/{output_dir}` directory, where `{profiler}` is the name of the profiler used (e.g., `mac-silicon` or `carbon`) and `{output_dir}` is the value of the `--output-dir` argument (default is `output`).

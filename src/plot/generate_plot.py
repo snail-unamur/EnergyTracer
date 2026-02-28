@@ -2,8 +2,8 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from plot.utilities.padding import pad
-from plot.utilities.metrics_extractors import extract_metrics
+from .utilities.padding import pad
+from .utilities.metrics_extractors import extract_metrics
 
 # Plot configuration
 FIGURE_SIZE    = (10, 6)

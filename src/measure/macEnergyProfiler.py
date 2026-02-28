@@ -1,5 +1,5 @@
 from zeus_apple_silicon import AppleEnergyMonitor
-from measure.abstractEnergyProfiler import AbstractEnergyProfiler
+from .abstractEnergyProfiler import AbstractEnergyProfiler
 
 class EnergyProfiler(AbstractEnergyProfiler):
     '''
