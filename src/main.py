@@ -1,5 +1,7 @@
 import os, random
 
+from alive_progress import alive_bar
+
 from .measure.carbonEnergyProfiler import EnergyProfiler as carbonEnergyProfiler
 from .measure.macEnergyProfiler import EnergyProfiler as macEnergyProfiler
 
@@ -24,10 +26,10 @@ def run_profiling(energy_profiler_cls, src_file, label, n_iter, verbose=False):
     code = open(src_file).read()
     monitor = energy_profiler_cls(verbose=verbose)
     try:
-        for i in range(n_iter):
-            monitor.measure_once(f"iter_{i}", lambda: exec(code))
-        if verbose:
-            print(f"Energy profiling for code {label} completed.")
+        with alive_bar(n_iter, disable=not verbose) as bar:
+            for i in range(n_iter):
+                monitor.measure_once(f"iter_{i}", lambda: exec(code))
+                bar()
     except KeyboardInterrupt:
         if verbose:
             print(f"Energy profiling for code {label} interrupted by user.")
