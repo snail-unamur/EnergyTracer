@@ -13,6 +13,9 @@ wheels/
 # MacOS system file
 .DS_Store
 
+src/python/*
+
+
 output/*
 
 # Exclude code under measurement
