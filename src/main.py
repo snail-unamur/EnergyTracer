@@ -28,7 +28,9 @@ def run_profiling(energy_profiler_cls, src_file, label, n_iter, verbose=False):
     try:
         with alive_bar(n_iter, disable=not verbose) as bar:
             for i in range(n_iter):
-                monitor.measure_once(f"iter_{i}", lambda: exec(code))
+                # Set __name__ to "__main__" so that `if __name__ == "__main__"` guards work 
+                # correctly in the measured code.
+                monitor.measure_once(f"iter_{i}", lambda: exec(code, {"__name__": "__main__"}))
                 bar()
     except KeyboardInterrupt:
         if verbose:
