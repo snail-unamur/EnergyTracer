@@ -75,7 +75,7 @@ def main(args, energy_profiler_cls):
     second_result = run_profiling(energy_profiler_cls, runs[1][0], runs[1][1], n_iter=args.iter, verbose=args.verbose)
 
     if args.verbose:
-        print("Energy profiling completed.")
+        print("\nEnergy profiling completed!")
 
     if swapped:
         history_with_smell = second_result
