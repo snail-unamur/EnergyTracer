@@ -12,7 +12,7 @@ Have you ever wondered how much energy your code consumes? How to optimize it fo
 ## Profilers
 
 To enable accurate energy measurements, EnergyTracer supports various profilers that can be used to collect energy metrics. Here is a table summarizing the supported profilers:
-| Profiler | Library | Method | Hardware | Precision | Best for |
+| Profiler | Library | Method | Hardware | Precision (out of 3) | Best for |
 |---|---|---|---|:---:|---|
 | `mac-silicon` | `zeus_apple_silicon` | Reads Apple Silicon **hardware power counters** directly (IOKit) | **Apple M-series only** | ⭐⭐⭐ | Accurate absolute energy measurement on M-series Macs; fine-grained profiling of code blocks |
 | `carbon` | `codecarbon` | **Software model**: estimates power from CPU TDP, utilization, and time | **Cross-platform** | ⭐⭐ | CO₂ emission reports; long-running workloads; multi-platform projects or mixed hardware |
