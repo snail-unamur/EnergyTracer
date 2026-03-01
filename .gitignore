@@ -1,4 +1,4 @@
-# Python-generated files
+# ── Python build & cache ──────────────────────────────────────────────────────
 __pycache__/
 *.py[oc]
 build/
@@ -7,25 +7,27 @@ wheels/
 *.egg-info
 .pytest_cache/
 
-# Virtual environments
+# ── Virtual environments ──
 .venv
 
-# MacOS system file
+# ── OS-specific ──
 .DS_Store
 
+# ── Project-specific ──
+# Code under measurement
 src/python/*
 
-
+# Experiment output
 output/*
 
-# Exclude code under measurement
-src/python/*
+# ── Testing ──
+.coverage
+htmlcov/
+coverage.xml
 
+# ── Linting ──
+.ruff_cache/
+
+# ── Energy profiling ──
 # CodeCarbon temporary log file
 powermetrics_log.txt
-
-# Pytest
-.coverage
-
-# Ruff
-.ruff_cache/

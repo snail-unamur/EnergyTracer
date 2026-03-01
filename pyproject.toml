@@ -1,9 +1,20 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# BUILD SYSTEM
+# ══════════════════════════════════════════════════════════════════════════════
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PROJECT METADATA
+# ══════════════════════════════════════════════════════════════════════════════
 [project]
 name = "energytracer"
 version = "0.1.0"
-license = { text = "CC BY-NC-SA 4.0" }
 description = "A tool to measure and compare the energy consumption of Python code variants, with a focus on identifying the impact of code smells."
 readme = "README.md"
+license = { text = "CC BY-NC-SA 4.0" }
 requires-python = ">=3.11"
 dependencies = [
     "alive-progress>=3.3.0",
@@ -11,8 +22,6 @@ dependencies = [
     "matplotlib>=3.10.8",
     "numpy>=2.4.2",
     "pandas>=3.0.1",
-    "pytest>=9.0.2",
-    "pytest-cov>=7.0.0",
     "zeus-apple-silicon>=1.0.4; sys_platform == 'darwin'",
 ]
 
@@ -20,59 +29,71 @@ dependencies = [
 ET = "src.main:cli"
 EnergyTracer = "src.main:cli"
 
+
+# ══════════════════════════════════════════════════════════════════════════════
+# UV
+# ══════════════════════════════════════════════════════════════════════════════
 [tool.uv]
 package = true
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
     "ruff>=0.15.4",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pre-commit>=4.5.1",
 ]
 
+
+# ══════════════════════════════════════════════════════════════════════════════
+# HATCH
+# ══════════════════════════════════════════════════════════════════════════════
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RUFF — Linter & Formatter
+# ══════════════════════════════════════════════════════════════════════════════
 [tool.ruff]
-line-length = 88          # Black-compatible default 
+line-length = 88
 target-version = "py314"
-exclude = [
-    ".git", ".venv", "__pycache__", "dist", "build", "*.egg-info"
-]
+exclude = [".git", ".venv", "__pycache__", "dist", "build", "*.egg-info"]
 
 [tool.ruff.lint]
-select = ["E", "W", "F"]  # baseline: PEP8 errors/warnings + Pyflakes
+select = ["E", "W", "F"]
 extend-select = [
-    "I",    # isort — sort imports
-    "UP",   # pyupgrade — modernize syntax for target Python version
-    "C4",   # flake8-comprehensions — catch bad list/dict/set usage
-    "FA",   # flake8-future-annotations — enforce `from __future__ import annotations`
-    "ISC",  # flake8-implicit-str-concat — flag accidental string concat
-    "ICN",  # flake8-import-conventions — enforce np/pd/plt aliases
-    "RET",  # flake8-return — clean return practices
-    "SIM",  # flake8-simplify — suggest simpler code patterns
-    "TID",  # flake8-tidy-imports — absolute imports, banned modules
-    "TC",   # flake8-type-checking — move type-only imports to TYPE_CHECKING
-    "PTH",  # flake8-use-pathlib — prefer pathlib over os.path
-    "B",    # flake8-bugbear — opinionated bugs and design issues
-    "S",    # flake8-bandit — security checks
-    "N",    # pep8-naming — naming conventions
+    "I",   # isort — sort imports
+    "UP",  # pyupgrade — modernize syntax for target Python version
+    "C4",  # flake8-comprehensions — catch bad list/dict/set usage
+    "FA",  # flake8-future-annotations — enforce `from __future__ import annotations`
+    "ISC", # flake8-implicit-str-concat — flag accidental string concat
+    "ICN", # flake8-import-conventions — enforce np/pd/plt aliases
+    "RET", # flake8-return — clean return practices
+    "SIM", # flake8-simplify — suggest simpler code patterns
+    "TID", # flake8-tidy-imports — absolute imports, banned modules
+    "TC",  # flake8-type-checking — move type-only imports to TYPE_CHECKING
+    "PTH", # flake8-use-pathlib — prefer pathlib over os.path
+    "B",   # flake8-bugbear — opinionated bugs and design issues
+    "S",   # flake8-bandit — security checks
+    "N",   # pep8-naming — naming conventions
 ]
 ignore = [
     "E501",   # line too long (handled by formatter)
     "ISC001", # conflicts with ruff formatter
     "S101",   # use of assert (common in tests)
+    "S102",   # use of exec (required in this project)
     "TD003",  # missing TODO issue link (too strict)
     "RET504", # unnecessary assignment before return (debatable)
-    "S102",   # use of exec (must need exec in this project)
 ]
-fixable = ["ALL"]  # allow auto-fix on everything fixable
+fixable = ["ALL"]
 unfixable = []
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
-    "S101",  # asserts are fine in tests
-    "S105",  # hardcoded passwords in fixtures are fine
-    "D",     # no docstrings required in tests
+    "S101", # asserts are fine in tests
+    "S105", # hardcoded passwords in fixtures are fine
+    "D",    # no docstrings required in tests
 ]
 
 [tool.ruff.lint.isort]
@@ -83,12 +104,50 @@ force-sort-within-sections = true
 classmethod-decorators = ["classmethod", "pydantic.validator"]
 
 [tool.ruff.format]
-quote-style = "double"           # Black-compatible
+quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 docstring-code-format = true
 docstring-code-line-length = 80
 
 
-[tool.hatch.build.targets.wheel]
-packages = ["src"]
+# ══════════════════════════════════════════════════════════════════════════════
+# PYTEST
+# ══════════════════════════════════════════════════════════════════════════════
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["test"]
+pythonpath = ["src"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--strict-config",
+    "--import-mode=importlib",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+#    "--cov-fail-under=80",
+]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# COVERAGE
+# ══════════════════════════════════════════════════════════════════════════════
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["*/tests/*", "*/__init__.py", "*/abstract_energy_profiler.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+# fail-under=80
+exclude_also = [
+    "def __repr__",
+    "def __str__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@(abc\\.)?abstractmethod",
+    "TYPE_CHECKING",
+]
