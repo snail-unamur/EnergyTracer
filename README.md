@@ -136,10 +136,6 @@ To further reduce temporal bias, the execution order of code variants is randomi
 > 
 > Note that while the `run_experiment.sh` script runs, it is advisable to avoid using the system for any other tasks to minimize interference with the measurements.
 
-## Author
-
-Florian Stormacq - [GitHub](https://github.com/fstormacq)
-
 ## Acknowledgements
 
 This project was developed as part of a Master degree in Computer Science at the University of Namur, Belgium.

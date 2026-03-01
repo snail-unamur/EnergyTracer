@@ -1,8 +1,11 @@
 from pathlib import Path
 
+import pytest
+
 from src.utilities.save_csv import save_history
 
 
+@pytest.mark.integration
 def test_save_history(tmp_path):
     history = [
         {"i": 0, "cpu_mj": 10.5, "gpu_mj": 5.2, "ane_mj": 3.1, "dram_mj": 1.0},
@@ -24,6 +27,7 @@ def test_save_history(tmp_path):
         assert lines[2] == "1,11.0,5.5,3.3,1.2"
 
 
+@pytest.mark.integration
 def test_save_history_empty(tmp_path):
     history = []
     filename = "empty_history.csv"
@@ -41,6 +45,7 @@ def test_save_history_empty(tmp_path):
         assert len(lines) == 1
 
 
+@pytest.mark.integration
 def test_save_history_missing_fields(tmp_path):
     history = [
         {"i": 0, "cpu_mj": 10.5},
@@ -62,6 +67,7 @@ def test_save_history_missing_fields(tmp_path):
         assert lines[2] == "1,,5.5,,"
 
 
+@pytest.mark.integration
 def test_save_history_nonexistent_directory(tmp_path):
     history = [
         {"i": 0, "cpu_mj": 10.5, "gpu_mj": 5.2, "ane_mj": 3.1, "dram_mj": 1.0},
@@ -82,6 +88,7 @@ def test_save_history_nonexistent_directory(tmp_path):
         assert lines[1] == "0,10.5,5.2,3.1,1.0"
 
 
+@pytest.mark.integration
 def test_save_history_overwrite(tmp_path):
     history1 = [
         {"i": 0, "cpu_mj": 10.5, "gpu_mj": 5.2, "ane_mj": 3.1, "dram_mj": 1.0},

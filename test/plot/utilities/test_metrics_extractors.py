@@ -1,6 +1,9 @@
+import pytest
+
 from src.plot.utilities.metrics_extractors import extract_metrics
 
 
+@pytest.mark.unit
 def test_extract_metrics():
     history = [
         {"cpu_mj": 10, "gpu_mj": 20, "ane_mj": 30, "dram_mj": 40},
@@ -15,6 +18,7 @@ def test_extract_metrics():
     assert dram_metrics == [40, 45]
 
 
+@pytest.mark.unit
 def test_extract_metrics_with_empty_history():
     history = []
     cpu_metrics, gpu_metrics, ane_metrics, dram_metrics = extract_metrics(history)
@@ -25,6 +29,7 @@ def test_extract_metrics_with_empty_history():
     assert dram_metrics == []
 
 
+@pytest.mark.unit
 def test_extract_metrics_with_missing_keys():
     history = [
         {"cpu_mj": 10, "gpu_mj": 20, "ane_mj": 30},  # dram_mj missing
@@ -38,6 +43,7 @@ def test_extract_metrics_with_missing_keys():
         pass
 
 
+@pytest.mark.unit
 def test_extract_metrics_with_inconsistent_keys():
     history = [
         {"cpu_mj": 10, "gpu_mj": 20, "ane_mj": 30, "dram_mj": 40},

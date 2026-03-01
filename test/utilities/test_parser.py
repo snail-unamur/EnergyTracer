@@ -1,3 +1,5 @@
+import pytest
+
 from src.utilities.parser import (
     DEFAULT_ITERATIONS,
     DEFAULT_OUTPUT_DIR,
@@ -8,6 +10,7 @@ from src.utilities.parser import (
 )
 
 
+@pytest.mark.unit
 def test_parse_arguments_defaults(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET"])
     args = parse_arguments()
@@ -20,6 +23,7 @@ def test_parse_arguments_defaults(monkeypatch):
     assert not args.verbose
 
 
+@pytest.mark.unit
 def test_parse_profiler_argument(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET", "-p", "mac-silicon"])
     assert parse_arguments().profiler == "mac-silicon"
@@ -28,12 +32,14 @@ def test_parse_profiler_argument(monkeypatch):
     assert parse_arguments().profiler == "carbon"
 
 
+@pytest.mark.unit
 def test_parse_iterations_argument(monkeypatch):
     iteration = 500
     monkeypatch.setattr("sys.argv", ["ET", "-n", str(iteration)])
     assert parse_arguments().iter == iteration
 
 
+@pytest.mark.unit
 def test_parse_src_file_arguments(monkeypatch):
     src_file_1 = "custom_path_with_smell.py"
     src_file_2 = "custom_path_without_smell.py"
@@ -43,22 +49,26 @@ def test_parse_src_file_arguments(monkeypatch):
     assert args.src_file_2 == src_file_2
 
 
+@pytest.mark.unit
 def test_parse_output_dir_argument(monkeypatch):
     output_dir = "custom_output"
     monkeypatch.setattr("sys.argv", ["ET", "-o", output_dir])
     assert parse_arguments().output_dir == output_dir
 
 
+@pytest.mark.unit
 def test_parse_shuffle_flag(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET", "--shuffle"])
     assert parse_arguments().shuffle
 
 
+@pytest.mark.unit
 def test_parse_verbose_flag(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET", "--verbose"])
     assert parse_arguments().verbose
 
 
+@pytest.mark.unit
 def test_parse_all_arguments(monkeypatch):
     profiler = "mac-silicon"
     iteration = 200

@@ -1,6 +1,9 @@
+import pytest
+
 from src.plot.utilities.padding import pad
 
 
+@pytest.mark.unit
 def test_pad_with_shorter_list():
     lst = [1, 2, 3]
     length = 5
@@ -12,6 +15,7 @@ def test_pad_with_shorter_list():
     assert all(isinstance(x, float) and x != x for x in padded_list[len(lst) :])
 
 
+@pytest.mark.unit
 def test_pad_with_equal_length():
     lst = [1, 2, 3]
     length = 3
@@ -19,6 +23,7 @@ def test_pad_with_equal_length():
     assert pad(lst, length) == expected
 
 
+@pytest.mark.unit
 def test_pad_with_longer_list():
     lst = [1, 2, 3, 4, 5]
     length = 3

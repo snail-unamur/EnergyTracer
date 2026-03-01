@@ -118,6 +118,11 @@ docstring-code-line-length = 80
 minversion = "8.0"
 testpaths = ["test"]
 pythonpath = ["src"]
+markers = [
+    "unit: fast, isolated unit tests with no I/O",
+    "integration: tests that interact with the filesystem or hardware",
+    "slow: tests that are long to execute (e.g., hardware measurements)",
+]
 addopts = [
     "-v",
     "--tb=short",
