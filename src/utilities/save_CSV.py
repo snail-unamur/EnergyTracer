@@ -1,7 +1,9 @@
-import os, csv
+import csv
+from pathlib import Path
+
 
 def save_history(history: list, filename: str, directory: str = "output"):
-    '''
+    """
     Saves the energy profiling history to a CSV file.
 
     Inputs
@@ -17,13 +19,15 @@ def save_history(history: list, filename: str, directory: str = "output"):
     Author
     ------
         Claude Sonnet 4.6
-    '''
-    output_dir = os.path.join(directory, "csv")
-    os.makedirs(output_dir, exist_ok=True)
+    """
+    output_dir = Path(directory) / "csv"
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    path = os.path.join(output_dir, filename)
+    path = output_dir / filename
 
-    with open(path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["i", "cpu_mj", "gpu_mj", "ane_mj", "dram_mj"])
+    with path.open("w", newline="") as f:
+        writer = csv.DictWriter(
+            f, fieldnames=["i", "cpu_mj", "gpu_mj", "ane_mj", "dram_mj"]
+        )
         writer.writeheader()
         writer.writerows(history)

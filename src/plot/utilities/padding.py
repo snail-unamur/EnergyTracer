@@ -1,5 +1,5 @@
 def pad(lst, length):
-    '''
+    """
     Pads a list with NaN values to ensure it has a specified length.
 
     Inputs
@@ -15,5 +15,5 @@ def pad(lst, length):
     Author
     ------
         Claude Opus 4.6
-    '''
-    return lst + [float('nan')] * (length - len(lst))
+    """
+    return lst + [float("nan")] * (length - len(lst))

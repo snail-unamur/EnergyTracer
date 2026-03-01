@@ -1,4 +1,12 @@
-from src.utilities.parser import *
+from src.utilities.parser import (
+    DEFAULT_ITERATIONS,
+    DEFAULT_OUTPUT_DIR,
+    DEFAULT_PROFILER,
+    DEFAULT_SRC_FILE_1,
+    DEFAULT_SRC_FILE_2,
+    parse_arguments,
+)
+
 
 def test_parse_arguments_defaults(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET"])
@@ -11,6 +19,7 @@ def test_parse_arguments_defaults(monkeypatch):
     assert not args.shuffle
     assert not args.verbose
 
+
 def test_parse_profiler_argument(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET", "-p", "mac-silicon"])
     assert parse_arguments().profiler == "mac-silicon"
@@ -18,57 +27,71 @@ def test_parse_profiler_argument(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET", "-p", "carbon"])
     assert parse_arguments().profiler == "carbon"
 
+
 def test_parse_iterations_argument(monkeypatch):
-    ITERATION = 500
-    monkeypatch.setattr("sys.argv", ["ET", "-n", str(ITERATION)])
-    assert parse_arguments().iter == ITERATION
+    iteration = 500
+    monkeypatch.setattr("sys.argv", ["ET", "-n", str(iteration)])
+    assert parse_arguments().iter == iteration
+
 
 def test_parse_src_file_arguments(monkeypatch):
-    SRC_FILE_1 = "custom_path_with_smell.py"
-    SRC_FILE_2 = "custom_path_without_smell.py"
-    monkeypatch.setattr("sys.argv", ["ET", "-f1", SRC_FILE_1, "-f2", SRC_FILE_2])
+    src_file_1 = "custom_path_with_smell.py"
+    src_file_2 = "custom_path_without_smell.py"
+    monkeypatch.setattr("sys.argv", ["ET", "-f1", src_file_1, "-f2", src_file_2])
     args = parse_arguments()
-    assert args.src_file_1 == SRC_FILE_1
-    assert args.src_file_2 == SRC_FILE_2
+    assert args.src_file_1 == src_file_1
+    assert args.src_file_2 == src_file_2
+
 
 def test_parse_output_dir_argument(monkeypatch):
-    OUTPUT_DIR = "custom_output"
-    monkeypatch.setattr("sys.argv", ["ET", "-o", OUTPUT_DIR])
-    assert parse_arguments().output_dir == OUTPUT_DIR
+    output_dir = "custom_output"
+    monkeypatch.setattr("sys.argv", ["ET", "-o", output_dir])
+    assert parse_arguments().output_dir == output_dir
+
 
 def test_parse_shuffle_flag(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET", "--shuffle"])
-    assert parse_arguments().shuffle == True
+    assert parse_arguments().shuffle
+
 
 def test_parse_verbose_flag(monkeypatch):
     monkeypatch.setattr("sys.argv", ["ET", "--verbose"])
-    assert parse_arguments().verbose == True
+    assert parse_arguments().verbose
+
 
 def test_parse_all_arguments(monkeypatch):
-    PROFILER = "mac-silicon"
-    ITERATION = 200
-    SRC_FILE_1 = "custom_with_smell.py"
-    SRC_FILE_2 = "custom_without_smell.py"
-    OUTPUT_DIR = "custom_output_dir"
-    SHUFFLE = True
-    VERBOSE = True
+    profiler = "mac-silicon"
+    iteration = 200
+    src_file_1 = "custom_with_smell.py"
+    src_file_2 = "custom_without_smell.py"
+    output_dir = "custom_output_dir"
+    shuffle = True
+    verbose = True
 
-    monkeypatch.setattr("sys.argv", [
-        "ET",
-        "-p", PROFILER,
-        "-n", str(ITERATION),
-        "-f1", SRC_FILE_1,
-        "-f2", SRC_FILE_2,
-        "-o", OUTPUT_DIR,
-        "--shuffle",
-        "--verbose"
-    ])
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "ET",
+            "-p",
+            profiler,
+            "-n",
+            str(iteration),
+            "-f1",
+            src_file_1,
+            "-f2",
+            src_file_2,
+            "-o",
+            output_dir,
+            "--shuffle",
+            "--verbose",
+        ],
+    )
 
     args = parse_arguments()
-    assert args.profiler == PROFILER
-    assert args.iter == ITERATION
-    assert args.src_file_1 == SRC_FILE_1
-    assert args.src_file_2 == SRC_FILE_2
-    assert args.output_dir == OUTPUT_DIR
-    assert args.shuffle == SHUFFLE
-    assert args.verbose == VERBOSE
+    assert args.profiler == profiler
+    assert args.iter == iteration
+    assert args.src_file_1 == src_file_1
+    assert args.src_file_2 == src_file_2
+    assert args.output_dir == output_dir
+    assert args.shuffle == shuffle
+    assert args.verbose == verbose

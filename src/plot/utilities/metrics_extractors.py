@@ -1,4 +1,4 @@
-def extract_metrics(history: dict) :
+def extract_metrics(history: dict):
     cpu_metrics = [entry["cpu_mj"] for entry in history]
     gpu_metrics = [entry["gpu_mj"] for entry in history]
     ane_metrics = [entry["ane_mj"] for entry in history]
