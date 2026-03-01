@@ -56,6 +56,11 @@ To use EnergyTracer, you need to have Python installed on your system. The proje
 ./init.sh
 ```
 
+```bash
+# For our windows users, you can run the following command instead:
+.\init.bat
+```
+
 It is as simple as that! The `init.sh` script will set up and install all the necessary dependencies in a dedicated virtual environment managed by `uv`. After running this command, you will be ready to run the tool and start measuring the energy consumption of your code.
 
 To run the EnergyTracer, you can use the following command:
@@ -111,6 +116,12 @@ To facilitate repeated measurements and comparisons, a shell script named `run_e
 
 ```shell
 ./run_experiment.sh
+```
+
+And similarly for Windows users:
+
+```shell
+.\run_experiment.bat
 ```
 
 The script performs the following steps:
