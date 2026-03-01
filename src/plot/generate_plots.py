@@ -57,24 +57,47 @@ def compare_histories(
         }
     )
 
-    # Create output directory if it doesn't exist
     output_dir = Path(directory) / PLOTS_SUBDIR
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Plotting
+    comparaison_directory = output_dir / "comparisons"
+    comparaison_directory.mkdir(parents=True, exist_ok=True)
+
+    moustache_directory = output_dir / "moustaches"
+    moustache_directory.mkdir(parents=True, exist_ok=True)
+
     plot_all_metrics(df, output_dir / "all_energy_comparison.png", ane_label=ane_label)
-    plot_specific_metrics(df, "cpu", output_dir / "cpu_energy_comparison.png")
-    plot_specific_metrics(df, "gpu", output_dir / "gpu_energy_comparison.png")
-    plot_specific_metrics(
-        df,
-        ane_label,
-        output_dir / f"{ane_label.lower()}_energy_comparison.png",
-        unit=ane_unit,
-    )
-    plot_specific_metrics(df, "dram", output_dir / "dram_energy_comparison.png")
+
+    for metric in ["cpu", "gpu", "dram", ane_label.lower()]:
+        plot_specific_metrics(
+            df,
+            metric,
+            output_dir / f"comparisons/{metric}_comparison.png",
+            unit=ane_unit if metric == ane_label.lower() else "mJ",
+        )
+
+        plot_moustache(
+            df,
+            metric,
+            output_dir / f"moustaches/{metric}_moustache.png",
+            unit=ane_unit if metric == ane_label.lower() else "mJ",
+        )
 
 
 def plot_all_metrics(df: pd.DataFrame, filename: str, ane_label: str = "ANE"):
+    """
+    Generates a line plot comparing CPU, GPU, ANE/CO2, and DRAM energy consumption per iteration for both code versions.
+
+    Inputs
+    -------
+        df: DataFrame containing energy metrics for both code versions, with columns for each metric and code version.
+        filename: Path where the generated plot will be saved.
+        ane_label: Label for the ANE/CO2 metric depending on the profiler used ("ANE" for mac-silicon, "CO2" for carbon).
+
+    Notes
+    -----
+        Creates a comprehensive line plot that allows for a visual comparison of the energy profiles of the two code versions across all collected metrics.
+    """
     plt.figure(figsize=FIGURE_SIZE)
     plt.plot(df["Iteration"], df["CPU with code smell"], label="CPU with code smell")
     plt.plot(
@@ -114,6 +137,20 @@ def plot_all_metrics(df: pd.DataFrame, filename: str, ane_label: str = "ANE"):
 def plot_specific_metrics(
     df: pd.DataFrame, metric: str, filename: str, unit: str = "mJ"
 ):
+    """
+    Generates a line plot comparing a specific energy metric (CPU, GPU, ANE/CO2, or DRAM) per iteration for both code versions.
+
+    Inputs
+    -------
+        df: DataFrame containing energy metrics for both code versions, with columns for each metric and code version.
+        metric: The specific metric to plot ("cpu", "gpu", "dram", or "ane"/"co2" depending on the profiler).
+        filename: Path where the generated plot will be saved.
+        unit: Unit of the metric for labeling the y-axis (default is "mJ", but can be "g CO2eq" for the CO2 metric when using the carbon profiler).
+
+    Notes
+    -----
+        Creates a line plot that allows for a visual comparison of the specified energy metric between the two code versions across iterations, including average lines for each version.
+    """
     plt.figure(figsize=FIGURE_SIZE)
 
     for variant in ["with code smell", "without code smell"]:
@@ -134,6 +171,38 @@ def plot_specific_metrics(
     plt.ylabel(f"{metric.upper()} ({unit})")
     plt.title(f"{metric.upper()} Consumption Comparison")
     plt.legend(fontsize=LEGEND_FONTSIZE)
+    plt.grid(True)
+    plt.savefig(filename, dpi=FIGURE_DPI)
+    plt.close()
+
+
+def plot_moustache(df: pd.DataFrame, metric: str, filename: str, unit: str = "mJ"):
+    """
+    Generates a box plot (moustache plot) comparing the distribution of a specific energy metric (CPU, GPU, ANE/CO2, or DRAM) for both code versions.
+
+    Inputs
+    -------
+        df: DataFrame containing energy metrics for both code versions, with columns for each metric and code version.
+        metric: The specific metric to plot ("cpu", "gpu", "dram", or "ane"/"co2" depending on the profiler).
+        filename: Path where the generated plot will be saved.
+        unit: Unit of the metric for labeling the y-axis (default is "mJ", but can be "g CO2eq" for the CO2 metric when using the carbon profiler).
+
+    Notes
+    -----
+        Creates a box plot that allows for a visual comparison of the distribution of the specified energy metric between the two code versions, showing medians, quartiles, and potential outliers in the data.
+    """
+    plt.figure(figsize=FIGURE_SIZE)
+
+    data_with_smell = df[f"{metric.upper()} with code smell"].dropna()
+    data_without_smell = df[f"{metric.upper()} without code smell"].dropna()
+
+    plt.boxplot(
+        [data_with_smell, data_without_smell],
+        labels=["With code smell", "Without code smell"],
+    )
+
+    plt.ylabel(f"{metric.upper()} ({unit})")
+    plt.title(f"{metric.upper()} Consumption Moustache Plot")
     plt.grid(True)
     plt.savefig(filename, dpi=FIGURE_DPI)
     plt.close()

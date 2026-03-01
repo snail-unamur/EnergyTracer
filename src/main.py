@@ -5,9 +5,9 @@ import sys
 from alive_progress import alive_bar
 
 from .measure.carbon_energy_profiler import EnergyProfiler as carbonEnergyProfiler
-from .plot.generate_plot import compare_histories
+from .plot.generate_plots import compare_histories
 from .utilities.parser import parse_arguments
-from .utilities.save_CSV import save_history
+from .utilities.save_csv import save_history
 
 # Labels
 LABEL_WITH_SMELL = "with the code smell"
