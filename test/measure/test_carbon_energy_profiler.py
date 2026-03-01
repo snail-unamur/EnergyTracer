@@ -3,6 +3,8 @@ import pytest
 
 from src.measure.carbon_energy_profiler import EnergyProfiler
 
+pytestmark = pytest.mark.hardware
+
 
 @pytest.fixture
 def profiler():

@@ -121,6 +121,7 @@ pythonpath = ["src"]
 markers = [
     "unit: fast, isolated unit tests with no I/O",
     "integration: tests that interact with the filesystem or hardware",
+    "hardware: tests that require physical hardware (energy profilers)",
     "slow: tests that are long to execute (e.g., hardware measurements)",
 ]
 addopts = [

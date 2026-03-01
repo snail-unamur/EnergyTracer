@@ -9,6 +9,8 @@ if sys.platform != "darwin":
 
 from src.measure.mac_energy_profiler import EnergyProfiler
 
+pytestmark = pytest.mark.hardware
+
 
 @pytest.fixture
 def profiler():
