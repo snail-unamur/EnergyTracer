@@ -1,4 +1,11 @@
+import sys
+
 import pytest
+
+if sys.platform != "darwin":
+    pytest.skip(
+        "zeus_apple_silicon is only available on macOS", allow_module_level=True
+    )
 
 from src.measure.mac_energy_profiler import EnergyProfiler
 
