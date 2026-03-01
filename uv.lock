@@ -434,7 +434,7 @@ dependencies = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "pytest" },
-    { name = "zeus-apple-silicon" },
+    { name = "zeus-apple-silicon", marker = "sys_platform == 'darwin'" },
 ]
 
 [package.metadata]
@@ -445,7 +445,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.4.2" },
     { name = "pandas", specifier = ">=3.0.1" },
     { name = "pytest", specifier = ">=9.0.2" },
-    { name = "zeus-apple-silicon", specifier = ">=1.0.4" },
+    { name = "zeus-apple-silicon", marker = "sys_platform == 'darwin'", specifier = ">=1.0.4" },
 ]
 
 [[package]]

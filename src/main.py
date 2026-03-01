@@ -1,9 +1,8 @@
-import os, random
+import os, sys, random
 
 from alive_progress import alive_bar
 
 from .measure.carbonEnergyProfiler import EnergyProfiler as carbonEnergyProfiler
-from .measure.macEnergyProfiler import EnergyProfiler as macEnergyProfiler
 
 from .utilities.save_CSV import save_history
 from .utilities.parser import parse_arguments
@@ -95,7 +94,15 @@ def main(args, energy_profiler_cls):
 def cli():
     args = parse_arguments()
 
-    energy_profiler_cls = macEnergyProfiler if args.profiler == "mac-silicon" else carbonEnergyProfiler
+    if args.profiler == "mac-silicon":
+        if sys.platform != "darwin":
+            print("Error: The 'mac-silicon' profiler (zeus_apple_silicon) is only available on macOS with Apple Silicon.")
+            print("Please use the 'carbon' profiler on this platform: uv run ET")
+            sys.exit(1)
+        from .measure.macEnergyProfiler import EnergyProfiler as macEnergyProfiler
+        energy_profiler_cls = macEnergyProfiler
+    else:
+        energy_profiler_cls = carbonEnergyProfiler
 
     main(args, energy_profiler_cls)
 
