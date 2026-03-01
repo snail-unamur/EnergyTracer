@@ -23,3 +23,6 @@ src/python/*
 
 # CodeCarbon temporary log file
 powermetrics_log.txt
+
+# Pytest
+.coverage
