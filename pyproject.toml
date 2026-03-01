@@ -27,5 +27,68 @@ package = true
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[dependency-groups]
+dev = [
+    "ruff>=0.15.4",
+]
+
+[tool.ruff]
+line-length = 88          # Black-compatible default 
+target-version = "py314"
+exclude = [
+    ".git", ".venv", "__pycache__", "dist", "build", "*.egg-info"
+]
+
+[tool.ruff.lint]
+select = ["E", "W", "F"]  # baseline: PEP8 errors/warnings + Pyflakes
+extend-select = [
+    "I",    # isort — sort imports
+    "UP",   # pyupgrade — modernize syntax for target Python version
+    "C4",   # flake8-comprehensions — catch bad list/dict/set usage
+    "FA",   # flake8-future-annotations — enforce `from __future__ import annotations`
+    "ISC",  # flake8-implicit-str-concat — flag accidental string concat
+    "ICN",  # flake8-import-conventions — enforce np/pd/plt aliases
+    "RET",  # flake8-return — clean return practices
+    "SIM",  # flake8-simplify — suggest simpler code patterns
+    "TID",  # flake8-tidy-imports — absolute imports, banned modules
+    "TC",   # flake8-type-checking — move type-only imports to TYPE_CHECKING
+    "PTH",  # flake8-use-pathlib — prefer pathlib over os.path
+    "B",    # flake8-bugbear — opinionated bugs and design issues
+    "S",    # flake8-bandit — security checks
+    "N",    # pep8-naming — naming conventions
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "ISC001", # conflicts with ruff formatter
+    "S101",   # use of assert (common in tests)
+    "TD003",  # missing TODO issue link (too strict)
+    "RET504", # unnecessary assignment before return (debatable)
+    "S102",   # use of exec (must need exec in this project)
+]
+fixable = ["ALL"]  # allow auto-fix on everything fixable
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",  # asserts are fine in tests
+    "S105",  # hardcoded passwords in fixtures are fine
+    "D",     # no docstrings required in tests
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+force-sort-within-sections = true
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod", "pydantic.validator"]
+
+[tool.ruff.format]
+quote-style = "double"           # Black-compatible
+indent-style = "space"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+docstring-code-line-length = 80
+
+
 [tool.hatch.build.targets.wheel]
 packages = ["src"]

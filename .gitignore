@@ -26,3 +26,6 @@ powermetrics_log.txt
 
 # Pytest
 .coverage
+
+# Ruff
+.ruff_cache/
