@@ -44,47 +44,50 @@ def expected_name_in_dataframe():
 
 
 @pytest.mark.unit
+@pytest.mark.parametrize("ane_label", ["ANE", "CO2"])
 def test_prepare_dataframe_with_valid_histories(
-    valid_histories, expected_name_in_dataframe
+    valid_histories, expected_name_in_dataframe, ane_label
 ):
     history1, history2 = valid_histories
-    ane_label = "ANE"
 
     df = prepare_dataframe(history1, history2, ane_label)
 
     assert not df.empty
     assert len(df) == 2
-    for column in expected_name_in_dataframe(ane_label="ANE"):
+    for column in expected_name_in_dataframe(ane_label):
         assert column in df.columns
 
     assert df["CPU with code smell"].tolist() == [10, 12]
     assert df["GPU with code smell"].tolist() == [5, 6]
-    assert df["ANE with code smell"].tolist() == [2, 3]
+    assert df[f"{ane_label} with code smell"].tolist() == [2, 3]
     assert df["DRAM with code smell"].tolist() == [3, 4]
     assert df["CPU without code smell"].tolist() == [8, 9]
     assert df["GPU without code smell"].tolist() == [4, 5]
-    assert df["ANE without code smell"].tolist() == [1, 2]
+    assert df[f"{ane_label} without code smell"].tolist() == [1, 2]
     assert df["DRAM without code smell"].tolist() == [2, 3]
 
 
 @pytest.mark.unit
-def test_prepare_dataframe_with_empty_histories(expected_name_in_dataframe):
+@pytest.mark.parametrize("ane_label", ["ANE", "CO2"])
+def test_prepare_dataframe_with_empty_histories(expected_name_in_dataframe, ane_label):
     history1 = []
     history2 = []
-    ane_label = "ANE"
 
     df = prepare_dataframe(history1, history2, ane_label)
 
     assert df.empty
     assert len(df) == 0
 
-    for column in expected_name_in_dataframe(ane_label="ANE"):
+    for column in expected_name_in_dataframe(ane_label=ane_label):
         assert column in df.columns
         assert df[column].empty
 
 
 @pytest.mark.unit
-def test_prepare_dataframe_with_unequal_histories(expected_name_in_dataframe):
+@pytest.mark.parametrize("ane_label", ["ANE", "CO2"])
+def test_prepare_dataframe_with_unequal_histories(
+    expected_name_in_dataframe, ane_label
+):
     history1 = [
         {"cpu_mj": 10, "gpu_mj": 5, "ane_mj": 2, "dram_mj": 3},
         {"cpu_mj": 12, "gpu_mj": 6, "ane_mj": 3, "dram_mj": 4},
@@ -92,19 +95,18 @@ def test_prepare_dataframe_with_unequal_histories(expected_name_in_dataframe):
     history2 = [
         {"cpu_mj": 8, "gpu_mj": 4, "ane_mj": 1, "dram_mj": 2},
     ]
-    ane_label = "ANE"
 
     df = prepare_dataframe(history1, history2, ane_label)
 
     assert not df.empty
     assert len(df) == 2
 
-    for column in expected_name_in_dataframe(ane_label="ANE"):
+    for column in expected_name_in_dataframe(ane_label=ane_label):
         assert column in df.columns
 
     assert df["CPU with code smell"].tolist() == [10, 12]
     assert df["GPU with code smell"].tolist() == [5, 6]
-    assert df["ANE with code smell"].tolist() == [2, 3]
+    assert df[f"{ane_label} with code smell"].tolist() == [2, 3]
     assert df["DRAM with code smell"].tolist() == [3, 4]
 
     assert (
@@ -116,8 +118,8 @@ def test_prepare_dataframe_with_unequal_histories(expected_name_in_dataframe):
         and df["GPU without code smell"].isna().sum() == 1
     )
     assert (
-        df["ANE without code smell"].tolist().count(1) == 1
-        and df["ANE without code smell"].isna().sum() == 1
+        df[f"{ane_label} without code smell"].tolist().count(1) == 1
+        and df[f"{ane_label} without code smell"].isna().sum() == 1
     )
     assert (
         df["DRAM without code smell"].tolist().count(2) == 1
@@ -125,36 +127,11 @@ def test_prepare_dataframe_with_unequal_histories(expected_name_in_dataframe):
     )
 
 
-@pytest.mark.unit
-def test_prepare_dataframe_with_co2_label(valid_histories, expected_name_in_dataframe):
-    history1, history2 = valid_histories
-    ane_label = "CO2"
-
-    df = prepare_dataframe(history1, history2, ane_label)
-
-    assert not df.empty
-    assert len(df) == 2
-    for column in expected_name_in_dataframe(ane_label="CO2"):
-        assert column in df.columns
-
-    assert df["CPU with code smell"].tolist() == [10, 12]
-    assert df["GPU with code smell"].tolist() == [5, 6]
-    assert df["CO2 with code smell"].tolist() == [2, 3]
-    assert df["DRAM with code smell"].tolist() == [3, 4]
-
-    assert df["CPU without code smell"].tolist() == [8, 9]
-    assert df["GPU without code smell"].tolist() == [4, 5]
-    assert df["CO2 without code smell"].tolist() == [1, 2]
-    assert df["DRAM without code smell"].tolist() == [2, 3]
-
-
 @pytest.mark.integration
-def test_plot_all_metrics_with_valid_histories(valid_histories, tmp_path):
+@pytest.mark.parametrize("ane_label", ["ANE", "CO2"])
+def test_plot_all_metrics_with_valid_histories(valid_histories, tmp_path, ane_label):
     history1, history2 = valid_histories
-    ane_label = "ANE"
-
     df = prepare_dataframe(history1, history2, ane_label)
-
     output_path = Path(tmp_path) / "all_energy_comparison.png"
 
     plot_all_metrics(df, output_path, ane_label=ane_label)
@@ -163,25 +140,7 @@ def test_plot_all_metrics_with_valid_histories(valid_histories, tmp_path):
     assert output_path.is_file()
     assert output_path.stat().st_size > 0
     assert output_path.read_bytes().startswith(b"\x89PNG")
-    assert plt.get_fignums() == []  # Ensure no open figures remain after plotting
-
-
-@pytest.mark.integration
-def test_plot_all_metrics_with_co2_label(valid_histories, tmp_path):
-    history1, history2 = valid_histories
-    ane_label = "CO2"
-
-    df = prepare_dataframe(history1, history2, ane_label)
-
-    output_path = Path(tmp_path) / "all_energy_comparison.png"
-
-    plot_all_metrics(df, output_path, ane_label=ane_label)
-
-    assert output_path.exists()
-    assert output_path.is_file()
-    assert output_path.stat().st_size > 0
-    assert output_path.read_bytes().startswith(b"\x89PNG")
-    assert plt.get_fignums() == []  # Ensure no open figures remain after plotting
+    assert plt.get_fignums() == []
 
 
 @pytest.mark.integration

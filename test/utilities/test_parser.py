@@ -24,12 +24,10 @@ def test_parse_arguments_defaults(monkeypatch):
 
 
 @pytest.mark.unit
-def test_parse_profiler_argument(monkeypatch):
-    monkeypatch.setattr("sys.argv", ["ET", "-p", "mac-silicon"])
-    assert parse_arguments().profiler == "mac-silicon"
-
-    monkeypatch.setattr("sys.argv", ["ET", "-p", "carbon"])
-    assert parse_arguments().profiler == "carbon"
+@pytest.mark.parametrize("profiler", ["mac-silicon", "carbon"])
+def test_parse_profiler_argument(monkeypatch, profiler):
+    monkeypatch.setattr("sys.argv", ["ET", "-p", profiler])
+    assert parse_arguments().profiler == profiler
 
 
 @pytest.mark.unit
@@ -57,15 +55,12 @@ def test_parse_output_dir_argument(monkeypatch):
 
 
 @pytest.mark.unit
-def test_parse_shuffle_flag(monkeypatch):
-    monkeypatch.setattr("sys.argv", ["ET", "--shuffle"])
-    assert parse_arguments().shuffle
-
-
-@pytest.mark.unit
-def test_parse_verbose_flag(monkeypatch):
-    monkeypatch.setattr("sys.argv", ["ET", "--verbose"])
-    assert parse_arguments().verbose
+@pytest.mark.parametrize(
+    "flag,attr", [("--shuffle", "shuffle"), ("--verbose", "verbose")]
+)
+def test_parse_flag(monkeypatch, flag, attr):
+    monkeypatch.setattr("sys.argv", ["ET", flag])
+    assert getattr(parse_arguments(), attr)
 
 
 @pytest.mark.unit
