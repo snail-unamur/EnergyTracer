@@ -3,7 +3,6 @@
 echo "Initializing project environment, using uv..."
 
 uv sync
-uv run pre-commit install
 
 # Freeze src/python files so local modifications are ignored by Git.
 # These files are meant to be edited locally for experimentation without being committed.
