@@ -66,20 +66,22 @@ def compare_histories(
     moustache_directory = output_dir / "moustaches"
     moustache_directory.mkdir(parents=True, exist_ok=True)
 
-    plot_all_metrics(df, output_dir / "all_energy_comparison.png", ane_label=ane_label)
+    plot_all_metrics(
+        df, comparaison_directory / "all_energy_comparison.png", ane_label=ane_label
+    )
 
     for metric in ["cpu", "gpu", "dram", ane_label.lower()]:
         plot_specific_metrics(
             df,
             metric,
-            output_dir / f"comparisons/{metric}_comparison.png",
+            comparaison_directory / f"{metric}_energy_comparison.png",
             unit=ane_unit if metric == ane_label.lower() else "mJ",
         )
 
         plot_moustache(
             df,
             metric,
-            output_dir / f"moustaches/{metric}_moustache.png",
+            moustache_directory / f"{metric}_moustache.png",
             unit=ane_unit if metric == ane_label.lower() else "mJ",
         )
 
