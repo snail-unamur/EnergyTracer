@@ -31,31 +31,10 @@ def compare_histories(
         Generates line plots for CPU, GPU, ANE/CO2, and DRAM energy consumption per iteration for both code
         versions, allowing for a visual comparison of their energy profiles.
     """
-    # Label and unit for the ANE/CO2 metric depending on the profiler
     ane_label = "ANE" if profiler == "mac-silicon" else "CO2"
     ane_unit = "mJ" if profiler == "mac-silicon" else "g CO2eq"
 
-    cpu_metrics1, gpu_metrics1, ane_metrics1, dram_metrics1 = extract_metrics(history1)
-    cpu_metrics2, gpu_metrics2, ane_metrics2, dram_metrics2 = extract_metrics(history2)
-
-    # Pad shorter list with NaN in case one run was interrupted early
-    max_len = max(len(history1), len(history2))
-    iterations = list(range(max_len))
-
-    # Create a DataFrame for plotting
-    df = pd.DataFrame(
-        {
-            "Iteration": iterations,
-            "CPU with code smell": pad(cpu_metrics1, max_len),
-            "CPU without code smell": pad(cpu_metrics2, max_len),
-            "GPU with code smell": pad(gpu_metrics1, max_len),
-            "GPU without code smell": pad(gpu_metrics2, max_len),
-            f"{ane_label} with code smell": pad(ane_metrics1, max_len),
-            f"{ane_label} without code smell": pad(ane_metrics2, max_len),
-            "DRAM with code smell": pad(dram_metrics1, max_len),
-            "DRAM without code smell": pad(dram_metrics2, max_len),
-        }
-    )
+    df = prepare_dataframe(history1, history2, ane_label)
 
     output_dir = Path(directory) / PLOTS_SUBDIR
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -84,6 +63,43 @@ def compare_histories(
             moustache_directory / f"{metric}_moustache.png",
             unit=ane_unit if metric == ane_label.lower() else "mJ",
         )
+
+
+def prepare_dataframe(history1, history2, ane_label: str):
+    """
+    Prepares a pandas DataFrame from the energy metrics collected in two different code executions.
+
+    Inputs
+    -------
+        history1: list of dicts containing energy metrics for the first code execution (with code smell).
+        history2: list of dicts containing energy metrics for the second code execution (without code smell).
+        ane_label: Label for the ANE/CO2 metric depending on the profiler used ("ANE" for mac-silicon, "CO2" for carbon).
+
+    Returns
+    -------
+        A pandas DataFrame structured for plotting, with columns for each energy metric and code version, and rows corresponding to iterations.
+    """
+    cpu_metrics1, gpu_metrics1, ane_metrics1, dram_metrics1 = extract_metrics(history1)
+    cpu_metrics2, gpu_metrics2, ane_metrics2, dram_metrics2 = extract_metrics(history2)
+
+    max_len = max(len(history1), len(history2))
+    iterations = list(range(max_len))
+
+    df = pd.DataFrame(
+        {
+            "Iteration": iterations,
+            "CPU with code smell": pad(cpu_metrics1, max_len),
+            "CPU without code smell": pad(cpu_metrics2, max_len),
+            "GPU with code smell": pad(gpu_metrics1, max_len),
+            "GPU without code smell": pad(gpu_metrics2, max_len),
+            f"{ane_label} with code smell": pad(ane_metrics1, max_len),
+            f"{ane_label} without code smell": pad(ane_metrics2, max_len),
+            "DRAM with code smell": pad(dram_metrics1, max_len),
+            "DRAM without code smell": pad(dram_metrics2, max_len),
+        }
+    )
+
+    return df
 
 
 def plot_all_metrics(df: pd.DataFrame, filename: str, ane_label: str = "ANE"):
@@ -200,7 +216,7 @@ def plot_moustache(df: pd.DataFrame, metric: str, filename: str, unit: str = "mJ
 
     plt.boxplot(
         [data_with_smell, data_without_smell],
-        labels=["With code smell", "Without code smell"],
+        tick_labels=["With code smell", "Without code smell"],
     )
 
     plt.ylabel(f"{metric.upper()} ({unit})")
