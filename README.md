@@ -3,11 +3,12 @@
 </p>
 
 
+[![CI](https://github.com/fstormacq/EnergyTracer/actions/workflows/main.yaml/badge.svg)](https://github.com/fstormacq/EnergyTracer/actions/workflows/main.yaml)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)]()
 [![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python)](https://python.org)
 [![uv](https://img.shields.io/badge/managed%20with-uv-purple)](https://github.com/astral-sh/uv)
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![University](https://img.shields.io/badge/UNamur-Master%20CS-darkgreen)](https://www.unamur.be/en)
+
 
 <!-- omit in toc -->
 ## Table of Contents
