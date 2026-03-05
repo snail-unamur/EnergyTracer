@@ -76,6 +76,11 @@ def shapiro_wilk_test(values: list[float]) -> tuple[float, float, bool]:
     if len(values) < 3:
         return (float("nan"), float("nan"), False)
 
+    arr = np.array(values, dtype=float)
+    if np.ptp(arr) == 0:
+        # All values identical — trivially normal, skip scipy to avoid warning
+        return (1.0, 1.0, True)
+
     stat, p_value = stats.shapiro(values)
     return (float(stat), float(p_value), bool(p_value > ALPHA))
 
@@ -98,6 +103,13 @@ def welch_ttest(
     """
     if len(sample_a) < 2 or len(sample_b) < 2:
         return (float("nan"), float("nan"), False)
+
+    a = np.array(sample_a, dtype=float)
+    b = np.array(sample_b, dtype=float)
+    if np.ptp(a) == 0 or np.ptp(b) == 0:
+        # At least one sample has zero variance — t-test is undefined
+        is_different = bool(np.mean(a) != np.mean(b))
+        return (0.0, 1.0 if not is_different else 0.0, is_different)
 
     t_stat, p_value = stats.ttest_ind(sample_a, sample_b, equal_var=False)
     return (float(t_stat), float(p_value), bool(p_value < ALPHA))
@@ -124,6 +136,9 @@ def cohens_d(sample_a: list[float], sample_b: list[float]) -> float:
     """
     a = np.array(sample_a, dtype=float)
     b = np.array(sample_b, dtype=float)
+
+    if np.ptp(a) == 0 and np.ptp(b) == 0:
+        return 0.0
 
     std_a = np.std(a, ddof=1)
     std_b = np.std(b, ddof=1)
