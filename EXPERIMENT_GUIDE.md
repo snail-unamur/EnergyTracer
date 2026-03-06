@@ -21,9 +21,12 @@ Before launching the experiment, go through this checklist:
 Then simply run:
 
 ```shell
-./run_experiment.sh      # macOS / Linux
-.\run_experiment.bat     # Windows
+./run_experiment.sh mac      # macOS (Apple Silicon)
+# ./run_experiment.sh x86    # x86 Linux (coming soon)
+# ./run_experiment.sh arm    # ARM Linux (coming soon)
 ```
+
+The argument selects the architecture-specific profiler to run alongside CodeCarbon (e.g., `mac` → `mac-silicon`). Run the script without arguments to see the list of supported machines.
 
 ---
 
@@ -60,7 +63,7 @@ Lock all settings that could shift mid-experiment:
 
 ## 2. Run the Experiment
 
-The automated script (`run_experiment.sh` / `run_experiment.bat`) executes all the steps described below. Understanding them helps you verify that the protocol is sound.
+The automated script (`run_experiment.sh` / `run_experiment.bat`) executes all the steps described below. It requires a **machine** argument (e.g., `mac`) that selects which architecture-specific profiler to run alongside CodeCarbon. Only `mac` is available for now; `x86` and `arm` are planned. Understanding the phases helps you verify that the protocol is sound.
 
 ### 2.1 Warm-Up Phase
 

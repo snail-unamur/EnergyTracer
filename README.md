@@ -185,16 +185,23 @@ All energy metrics are estimated in millijoules (mJ), and CO₂ emissions are es
 
 ## Automated Measurement Script
 
-To facilitate repeated measurements and comparisons, a shell script named `run_experiment.sh` is provided. This script automates running the measurements with multiple phases (warm-up, measurement, cooldown) and ensures consistent parameters across runs.
+To facilitate repeated measurements and comparisons, a shell and batch script named `run_experiment.sh` and `run_experiment.bat` are provided. This script automates running the measurements with multiple phases (warm-up, measurement, cooldown) and ensures consistent parameters across runs.
+
+The script requires a **machine** argument that selects which architecture-specific profiler to run alongside CodeCarbon:
+
+| Machine | Arch Profiler | Status |
+|---|---|---|
+| `mac` | `mac-silicon` (zeus_apple_silicon) | Available |
+| `x86` | pyRAPL | Coming soon |
+| `arm` | TBD | Coming soon |
 
 ```shell
-./run_experiment.sh
+./run_experiment.sh mac      # macOS (Apple Silicon)
+# ./run_experiment.sh x86    # x86 Linux (coming soon)
+# ./run_experiment.sh arm    # ARM Linux (coming soon)
 ```
 
-```shell
-# For Windows users:
-.\run_experiment.bat
-```
+Each iteration runs **two profilers**: `carbon` (cross-platform baseline) and the architecture-specific profiler selected by the machine argument. This makes it easy to run comparable tests across different machines (e.g., EC2 instances).
 
 The script performs the following steps:
 
@@ -214,7 +221,7 @@ Running reliable energy experiments requires a **controlled environment**. The f
 Here is a quick summary of the key steps:
 
 1. **Prepare the environment** — close all non-essential apps, disconnect peripherals, plug in the charger, lock display/power settings, and ensure stable room temperature.
-2. **Run the automated script** — `./run_experiment.sh` (or `.\run_experiment.bat`) handles warm-up, 30 measurement runs with cooldowns, and shuffled execution order.
+2. **Run the automated script** — `./run_experiment.sh mac` handles warm-up, 30 measurement runs with cooldowns, and shuffled execution order. The argument selects the architecture-specific profiler to run alongside CodeCarbon (only `mac` is supported for now; `x86` and `arm` are planned).
 3. **Do not interact** with the machine while the experiment is running.
 4. **Analyze the results** — inspect the generated plots and CSV files; look for consistent differences, low variance, and check for outliers.
 

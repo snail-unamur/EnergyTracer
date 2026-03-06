@@ -1,7 +1,70 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM Configuration
+REM ─────────────────────────────────────────────────────────
+REM EnergyTracer — Experiment Runner (Windows)
+REM ─────────────────────────────────────────────────────────
+
+REM === ANSI color codes (Windows 10+ Terminal) ===
+REM Using escape character via prompt trick.
+for /f %%a in ('echo prompt $E ^| cmd') do set "ESC=%%a"
+set "RST=%ESC%[0m"
+set "BOLD=%ESC%[1m"
+set "DIM=%ESC%[2m"
+set "RED=%ESC%[31m"
+set "GREEN=%ESC%[32m"
+set "YELLOW=%ESC%[33m"
+set "BLUE=%ESC%[34m"
+set "MAGENTA=%ESC%[35m"
+set "CYAN=%ESC%[36m"
+
+REM === Argument parsing ===
+
+if "%~1"=="" (
+    echo   %RED%x%RST%  Machine argument is required.
+    goto :usage
+)
+
+REM Map machine name to architecture-specific profiler.
+REM Each iteration always runs both 'carbon' (cross-platform) and an
+REM architecture-specific profiler selected here.
+REM
+REM To add a new machine:
+REM   1. Add an 'else if' block:  ) else if /i "%%~1"=="<name>" ( set ARCH_PROFILER=<profiler-id> )
+REM      where <profiler-id> matches a --profiler value accepted by ET
+REM      (see src/utilities/parser.py for the list of choices).
+REM   2. Add the entry in :usage below.
+if /i "%~1"=="mac" (
+    set ARCH_PROFILER=mac-silicon
+REM ) else if /i "%~1"=="x86" (
+    REM set ARCH_PROFILER=x86
+    REM TODO: implement pyRAPL profiler
+REM ) else if /i "%~1"=="arm" (
+    REM set ARCH_PROFILER=arm
+    REM TODO: implement ARM profiler
+) else (
+    echo   %RED%x%RST%  Unknown machine '%BOLD%%~1%RST%'.
+    goto :usage
+)
+set MACHINE=%~1
+goto :start
+
+:usage
+echo.
+echo   %BOLD%Usage:%RST% %~nx0 %CYAN%^<machine^>%RST%
+echo.
+echo   %BOLD%Supported machines:%RST%
+echo     %GREEN%mac%RST%       CodeCarbon + mac-silicon (zeus_apple_silicon)
+echo     %DIM%# x86     CodeCarbon + pyRAPL      (coming soon)%RST%
+echo     %DIM%# arm     CodeCarbon + TBD         (coming soon)%RST%
+echo.
+echo   %BOLD%Example:%RST% %~nx0 mac
+echo.
+exit /b 1
+
+:start
+
+REM === Configuration ===
 set BAR_WIDTH=30
 set WARMUP_RUNS=10
 set WARMUP_N=500
@@ -10,46 +73,136 @@ set MEASURE_N=1000
 set COOLDOWN=60
 set OUTPUT_DIR=output
 
-REM Note: On Windows, only the 'carbon' profiler is available.
-REM The 'mac-silicon' profiler (zeus_apple_silicon) is macOS-only.
+call :get_seconds GLOBAL_START
 
 echo.
-echo ======================================================
-echo   Energy Measurement (Windows - CodeCarbon only)
-echo ======================================================
+echo   %BOLD%%GREEN%# EnergyTracer%RST% %DIM%- Experiment Runner (Windows)%RST%
+echo   %DIM%------------------------------------------------%RST%
 echo.
-echo WARNING: Do not interrupt - results may be incomplete.
+echo   %BOLD%Machine%RST%      %GREEN%!MACHINE!%RST%
+echo   %BOLD%Profilers%RST%    %CYAN%carbon%RST% + %CYAN%!ARCH_PROFILER!%RST%
+echo   %BOLD%Warm-up%RST%      %WARMUP_RUNS% runs x 2 profilers %DIM%(n=%WARMUP_N%)%RST%
+echo   %BOLD%Measurement%RST%  %MEASURE_RUNS% runs x 2 profilers %DIM%(n=%MEASURE_N%)%RST%
+echo   %BOLD%Cooldown%RST%     %COOLDOWN%s between measurements
+echo.
+echo   %YELLOW%!%RST%  Do not interrupt - results may be incomplete.
 
-REM 1. Warm-up phase
+REM === Phase 1/2: Warm-up ===
+
 echo.
-echo -- Phase 1: Warm-up (%WARMUP_RUNS% iterations) --
+echo   %BOLD%%BLUE%^> Phase 1/2: Warm-up%RST%
 echo.
 
+call :get_seconds T0
+
+set /a "W_TOTAL=%WARMUP_RUNS% * 2"
 for /L %%i in (1,1,%WARMUP_RUNS%) do (
-    uv run ET -p carbon -n %WARMUP_N% -o warmup-%%i --shuffle
-    echo   Warm-up %%i/%WARMUP_RUNS% complete.
+    uv run ET -p carbon -n %WARMUP_N% -o warmup-%%i --shuffle >nul 2>&1
+    set /a "_wp=%%i * 2 - 1"
+    call :show_progress !_wp! !W_TOTAL! !T0!
+
+    uv run ET -p !ARCH_PROFILER! -n %WARMUP_N% -o warmup-%%i --shuffle >nul 2>&1
+    set /a "_wp=%%i * 2"
+    call :show_progress !_wp! !W_TOTAL! !T0!
 )
-echo   Warm-up complete.
 
-if exist "%OUTPUT_DIR%\" (
-    rmdir /s /q "%OUTPUT_DIR%"
-)
+call :end_phase !T0!
 
-REM 2. Measurement phase
+if exist "%OUTPUT_DIR%\" rmdir /s /q "%OUTPUT_DIR%"
+echo   %DIM%Warm-up results discarded.%RST%
+
+REM === Phase 2/2: Measurement ===
+
 echo.
-echo -- Phase 2: Measurement (%MEASURE_RUNS% iterations - with cooldown periods of %COOLDOWN%s) --
+echo   %BOLD%%BLUE%^> Phase 2/2: Measurement%RST%
 echo.
 
+call :get_seconds T0
+
+set /a "M_TOTAL=%MEASURE_RUNS% * 2"
 for /L %%i in (1,1,%MEASURE_RUNS%) do (
     timeout /t %COOLDOWN% /nobreak >nul
+    uv run ET -p carbon -n %MEASURE_N% -o measure-%%i --shuffle >nul 2>&1
+    set /a "_mp=%%i * 2 - 1"
+    call :show_progress !_mp! !M_TOTAL! !T0!
 
-    uv run ET -p carbon -n %MEASURE_N% -o measure-%%i --shuffle
-    echo   Measurement %%i/%MEASURE_RUNS% complete.
+    timeout /t %COOLDOWN% /nobreak >nul
+    uv run ET -p !ARCH_PROFILER! -n %MEASURE_N% -o measure-%%i --shuffle >nul 2>&1
+    set /a "_mp=%%i * 2"
+    call :show_progress !_mp! !M_TOTAL! !T0!
 )
-echo   Measurement complete.
 
-REM 3. End
+call :end_phase !T0!
+
+REM === Summary ===
+
+call :get_seconds GLOBAL_END
+set /a "_total=!GLOBAL_END! - !GLOBAL_START!"
+call :fmt_duration !_total! TOTAL_STR
+
 echo.
-echo -- All done! Results are in the '%OUTPUT_DIR%\' directory. --
+echo   %DIM%------------------------------------------------%RST%
+echo   %BOLD%%GREEN%v Experiment complete%RST%
+echo   %BOLD%Total time%RST%   %CYAN%!TOTAL_STR!%RST%
+echo   %BOLD%Results%RST%      %GREEN%'%OUTPUT_DIR%\'%RST%
+echo.
 
 endlocal
+exit /b 0
+
+REM ============================================================
+REM Subroutines
+REM ============================================================
+
+:get_seconds
+REM Stores seconds since midnight in variable named %~1.
+for /f "tokens=1-3 delims=:.," %%a in ("%time: =0%") do (
+    set /a "%~1=(1%%a %% 100) * 3600 + (1%%b %% 100) * 60 + (1%%c %% 100)"
+)
+exit /b 0
+
+:fmt_duration
+REM Formats %~1 seconds into a readable string, stored in %~2.
+set /a "_fh=%~1 / 3600"
+set /a "_fm=(%~1 %% 3600) / 60"
+set /a "_fs=%~1 %% 60"
+if !_fh! gtr 0 (
+    if !_fm! lss 10 set "_fm=0!_fm!"
+    if !_fs! lss 10 set "_fs=0!_fs!"
+    set "%~2=!_fh!h!_fm!m!_fs!s"
+) else if !_fm! gtr 0 (
+    if !_fs! lss 10 set "_fs=0!_fs!"
+    set "%~2=!_fm!m!_fs!s"
+) else (
+    set "%~2=!_fs!s"
+)
+exit /b 0
+
+:show_progress
+REM %~1=current  %~2=total  %~3=start_seconds
+call :get_seconds _NOW
+set /a "_el=!_NOW! - %~3"
+set /a "_pct=%~1 * 100 / %~2"
+set /a "_filled=%~1 * %BAR_WIDTH% / %~2"
+set /a "_empty=%BAR_WIDTH% - !_filled!"
+if %~1 gtr 0 (
+    set /a "_rem=!_el! * (%~2 - %~1) / %~1"
+) else (
+    set "_rem=0"
+)
+set "_bar="
+for /L %%j in (1,1,!_filled!) do set "_bar=!_bar!#"
+for /L %%j in (1,1,!_empty!) do set "_bar=!_bar!-"
+call :fmt_duration !_el! _EL_STR
+call :fmt_duration !_rem! _ETA_STR
+echo   %GREEN%!_bar:~0,!_filled!~!%RST%%DIM%!_bar:~!_filled!!%RST%  %BOLD%!_pct!%%%RST%  %DIM%%~1/%~2%RST%  %CYAN%!_EL_STR!%RST%  %YELLOW%~!_ETA_STR!%RST%
+exit /b 0
+
+:end_phase
+REM %~1=start_seconds
+call :get_seconds _END_NOW
+set /a "_dur=!_END_NOW! - %~1"
+call :fmt_duration !_dur! _DUR_STR
+echo.
+echo   %GREEN%v%RST%  Done in %BOLD%!_DUR_STR!%RST%
+exit /b 0
