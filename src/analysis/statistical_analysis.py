@@ -81,7 +81,12 @@ def shapiro_wilk_test(values: list[float]) -> tuple[float, float, bool]:
         # All values identical — trivially normal, skip scipy to avoid warning
         return (1.0, 1.0, True)
 
-    stat, p_value = stats.shapiro(values)
+    # Shapiro-Wilk is unreliable for N > 5000; subsample deterministically
+    if len(arr) > 5000:
+        rng = np.random.default_rng(seed=42)
+        arr = rng.choice(arr, size=5000, replace=False)
+
+    stat, p_value = stats.shapiro(arr)
     return (float(stat), float(p_value), bool(p_value > ALPHA))
 
 
