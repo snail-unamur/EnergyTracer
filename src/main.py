@@ -168,10 +168,10 @@ def main(args, energy_profiler_cls):
 def cli():
     args = parse_arguments()
 
-    if args.profiler == "mac-silicon":
+    if args.profiler == "mac":
         if sys.platform != "darwin":
             print(
-                "Error: The 'mac-silicon' profiler (zeus_apple_silicon) is only available on macOS with Apple Silicon."
+                "Error: The 'mac' profiler (zeus_apple_silicon) is only available on macOS with Apple Silicon."
             )
             print("Please use the 'carbon' profiler on this platform: uv run ET")
             sys.exit(1)

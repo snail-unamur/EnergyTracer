@@ -26,7 +26,7 @@ Then simply run:
 # ./run_experiment.sh arm    # ARM Linux (coming soon)
 ```
 
-The argument selects the architecture-specific profiler to run alongside CodeCarbon (e.g., `mac` → `mac-silicon`). Run the script without arguments to see the list of supported machines.
+The argument selects the architecture-specific profiler to run alongside CodeCarbon. Run the script without arguments to see the list of supported machines.
 
 ---
 

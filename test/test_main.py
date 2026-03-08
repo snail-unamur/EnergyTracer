@@ -78,7 +78,7 @@ def test_run_profiling_with_keyboard_interrupt(
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("profiler", ["mac-silicon", "carbon"])
+@pytest.mark.parametrize("profiler", ["mac", "carbon"])
 @patch("src.main.parse_arguments")
 def test_cli_with_profilers_on_darwin(mock_parse, monkeypatch, profiler):
     mock_parse.return_value = MagicMock(profiler=profiler)
@@ -106,7 +106,7 @@ def test_cli_with_profilers_on_darwin(mock_parse, monkeypatch, profiler):
 @pytest.mark.parametrize("platform", ["win32", "linux"])
 @patch("src.main.parse_arguments")
 def test_cli_with_mac_profiler_on_non_darwin(mock_parse, monkeypatch, platform):
-    mock_parse.return_value = MagicMock(profiler="mac-silicon")
+    mock_parse.return_value = MagicMock(profiler="mac")
     monkeypatch.setattr("sys.platform", platform)
 
     with pytest.raises(SystemExit) as exc_info:
@@ -131,7 +131,7 @@ def test_cli_with_carbon_profiler_on_non_darwin(mock_parse, monkeypatch, platfor
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("profiler", ["mac-silicon", "carbon"])
+@pytest.mark.parametrize("profiler", ["mac", "carbon"])
 @pytest.mark.parametrize(
     "shuffle, verbose", [(False, False), (False, True), (True, False), (True, True)]
 )

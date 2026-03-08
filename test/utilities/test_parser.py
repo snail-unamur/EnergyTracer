@@ -24,7 +24,7 @@ def test_parse_arguments_defaults(monkeypatch):
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("profiler", ["mac-silicon", "carbon"])
+@pytest.mark.parametrize("profiler", ["mac", "carbon"])
 def test_parse_profiler_argument(monkeypatch, profiler):
     monkeypatch.setattr("sys.argv", ["ET", "-p", profiler])
     assert parse_arguments().profiler == profiler
@@ -65,7 +65,7 @@ def test_parse_flag(monkeypatch, flag, attr):
 
 @pytest.mark.unit
 def test_parse_all_arguments(monkeypatch):
-    profiler = "mac-silicon"
+    profiler = "carbon"
     iteration = 200
     src_file_1 = "custom_with_smell.py"
     src_file_2 = "custom_without_smell.py"

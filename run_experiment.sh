@@ -33,7 +33,7 @@ usage() {
     printf "  ${BOLD}Usage:${RST} $0 ${CYAN}<machine>${RST}\n"
     echo ""
     printf "  ${BOLD}Supported machines:${RST}\n"
-    printf "    ${GREEN}mac${RST}       CodeCarbon + mac-silicon (zeus_apple_silicon)\n"
+    printf "    ${GREEN}mac${RST}       CodeCarbon + mac (zeus_apple_silicon)\n"
     printf "    ${DIM}# x86     CodeCarbon + pyRAPL      (coming soon)${RST}\n"
     printf "    ${DIM}# arm     CodeCarbon + TBD         (coming soon)${RST}\n"
     echo ""
@@ -52,7 +52,7 @@ usage() {
 #      (see src/utilities/parser.py for the list of choices).
 #   2. Uncomment / add the entry in usage() above.
 case "$1" in
-    mac)  ARCH_PROFILER="mac-silicon" ;;
+    mac)  ARCH_PROFILER="mac" ;;
     # x86)  ARCH_PROFILER="x86" ;;   # TODO: implement pyRAPL profiler
     # arm)  ARCH_PROFILER="arm" ;;   # TODO: implement ARM profiler
     "")   error "Machine argument is required."; usage ;;

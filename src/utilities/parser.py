@@ -16,9 +16,9 @@ def parse_arguments():
         "-p",
         "--profiler",
         type=str,
-        choices=["mac-silicon", "carbon"],
+        choices=["mac", "carbon"],
         default=DEFAULT_PROFILER,
-        help="Energy profiler to use: 'carbon' for CodeCarbon, 'mac-silicon' for zeus_apple_silicon. Default is 'carbon'.",
+        help="Energy profiler to use: 'carbon' for CodeCarbon, 'mac' for zeus_apple_silicon. Default is 'carbon'.",
     )
     parser.add_argument(
         "-n",

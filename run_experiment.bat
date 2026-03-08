@@ -35,7 +35,7 @@ REM      where <profiler-id> matches a --profiler value accepted by ET
 REM      (see src/utilities/parser.py for the list of choices).
 REM   2. Add the entry in :usage below.
 if /i "%~1"=="mac" (
-    set ARCH_PROFILER=mac-silicon
+    set ARCH_PROFILER=mac
 REM ) else if /i "%~1"=="x86" (
     REM set ARCH_PROFILER=x86
     REM TODO: implement pyRAPL profiler
@@ -54,7 +54,7 @@ echo.
 echo   %BOLD%Usage:%RST% %~nx0 %CYAN%^<machine^>%RST%
 echo.
 echo   %BOLD%Supported machines:%RST%
-echo     %GREEN%mac%RST%       CodeCarbon + mac-silicon (zeus_apple_silicon)
+echo     %GREEN%mac%RST%       CodeCarbon + mac (zeus_apple_silicon)
 echo     %DIM%# x86     CodeCarbon + pyRAPL      (coming soon)%RST%
 echo     %DIM%# arm     CodeCarbon + TBD         (coming soon)%RST%
 echo.

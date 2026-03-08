@@ -22,7 +22,7 @@ def compare_histories(
     -------
         history1: list of dicts containing energy metrics for the first code execution (with code smell).
         history2: list of dicts containing energy metrics for the second code execution (without code smell).
-        profiler: "mac-silicon" for zeus_apple_silicon (ANE metric), "carbon" for CodeCarbon (CO2 metric).
+        profiler: "mac" for zeus_apple_silicon (ANE metric), "carbon" for CodeCarbon (CO2 metric).
         directory: Directory where the generated plots will be saved.
 
     Notes
@@ -30,8 +30,8 @@ def compare_histories(
         Generates line plots for CPU, GPU, ANE/CO2, and DRAM energy consumption per iteration for both code
         versions, allowing for a visual comparison of their energy profiles.
     """
-    ane_label = "ANE" if profiler == "mac-silicon" else "CO2"
-    ane_unit = "mJ" if profiler == "mac-silicon" else "g CO2eq"
+    ane_label = "ANE" if profiler == "mac" else "CO2"
+    ane_unit = "mJ" if profiler == "mac" else "g CO2eq"
 
     df = prepare_dataframe(history1, history2, ane_label)
 
@@ -82,7 +82,7 @@ def prepare_dataframe(history1, history2, ane_label: str):
     -------
         history1: list of dicts containing energy metrics for the first code execution (with code smell).
         history2: list of dicts containing energy metrics for the second code execution (without code smell).
-        ane_label: Label for the ANE/CO2 metric depending on the profiler used ("ANE" for mac-silicon, "CO2" for carbon).
+        ane_label: Label for the ANE/CO2 metric depending on the profiler used ("ANE" for mac, "CO2" for carbon).
 
     Returns
     -------
@@ -119,7 +119,7 @@ def plot_all_metrics(df: pd.DataFrame, filename: str, ane_label: str = "ANE"):
     -------
         df: DataFrame containing energy metrics for both code versions, with columns for each metric and code version.
         filename: Path where the generated plot will be saved.
-        ane_label: Label for the ANE/CO2 metric depending on the profiler used ("ANE" for mac-silicon, "CO2" for carbon).
+        ane_label: Label for the ANE/CO2 metric depending on the profiler used ("ANE" for mac, "CO2" for carbon).
 
     Notes
     -----

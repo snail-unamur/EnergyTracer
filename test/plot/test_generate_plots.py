@@ -335,7 +335,7 @@ def test_compare_histories_with_valid_histories(valid_histories, tmp_path, ane_l
     compare_histories(
         history1,
         history2,
-        profiler="mac-silicon" if ane_label == "ANE" else "carbon",
+        profiler="mac" if ane_label == "ANE" else "carbon",
         directory=output_dir,
     )
 
