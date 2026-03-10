@@ -7,6 +7,7 @@ from alive_progress import alive_bar
 from .analysis.statistical_analysis import analyse_histories
 from .measure.carbon_energy_profiler import EnergyProfiler as carbonEnergyProfiler
 from .plot.generate_plots import compare_histories
+from .utilities import log
 from .utilities.parser import parse_arguments
 from .utilities.save_csv import save_history
 
@@ -22,8 +23,7 @@ CSV_WITHOUT_SMELL = "history_without_smell.csv"
 def run_profiling(energy_profiler_cls, src_file, label, n_iter, verbose=False):
     """Run energy profiling on a source file and return the measurement history."""
     if verbose:
-        print(f"Running code {label}")
-        print("-" * (len(f"Running code {label}")))
+        log.header(f"Running code {label}")
 
     code = Path(src_file).read_text()
     monitor = energy_profiler_cls(verbose=verbose)
@@ -38,7 +38,7 @@ def run_profiling(energy_profiler_cls, src_file, label, n_iter, verbose=False):
                 bar()
     except KeyboardInterrupt:
         if verbose:
-            print(f"Energy profiling for code {label} interrupted by user.")
+            log.warn(f"Energy profiling for code {label} interrupted by user.")
 
     monitor.finalize()
     return monitor.history
@@ -54,15 +54,17 @@ def collect_measurements(args, energy_profiler_cls):
     swapped = False
     if args.shuffle:
         if args.verbose:
-            print("Shuffling the order of code execution to mitigate temporal effects.")
+            log.info(
+                "Shuffling the order of code execution to mitigate temporal effects."
+            )
         if random.random() < 0.5:  # noqa: S311
             runs.reverse()
             swapped = True
             if args.verbose:
-                print("Order shuffled: first measuring code without code smell.")
+                log.dim("Order shuffled: first measuring code without code smell.")
         else:
             if args.verbose:
-                print("Order shuffled: first measuring code with code smell.")
+                log.dim("Order shuffled: first measuring code with code smell.")
 
     first_result = run_profiling(
         energy_profiler_cls,
@@ -71,9 +73,6 @@ def collect_measurements(args, energy_profiler_cls):
         n_iter=args.iter,
         verbose=args.verbose,
     )
-
-    if args.verbose:
-        print()
 
     second_result = run_profiling(
         energy_profiler_cls,
@@ -84,7 +83,7 @@ def collect_measurements(args, energy_profiler_cls):
     )
 
     if args.verbose:
-        print("\nEnergy profiling completed!")
+        log.ok("Energy profiling completed.")
 
     if swapped:
         return second_result, first_result
@@ -110,7 +109,7 @@ def save_cleaned(
     analysis = analyse_histories(history_with_smell, history_without_smell)
 
     if verbose:
-        print(
+        log.info(
             f"Outliers removed — A: {analysis['outliers_removed']['a']}, "
             f"B: {analysis['outliers_removed']['b']}"
         )
@@ -129,13 +128,11 @@ def save_cleaned(
 
 def main(args, energy_profiler_cls):
     if args.verbose:
-        msg = "Starting energy profiler"
-        print(msg)
-        print("-" * len(msg))
-        print(f"Energy profiler: {args.profiler}")
-        print(f"Number of iterations: {args.iter}")
-        print(f"Source file with code smell: {args.src_file_1}")
-        print(f"Source file without code smell: {args.src_file_2}\n")
+        log.header("EnergyTracer Configuration")
+        log.dim(f"Energy profiler:               {args.profiler}")
+        log.dim(f"Number of iterations:          {args.iter}")
+        log.dim(f"Source file with code smell:   {args.src_file_1}")
+        log.dim(f"Source file without code smell: {args.src_file_2}")
 
     history_with_smell, history_without_smell = collect_measurements(
         args, energy_profiler_cls
@@ -151,7 +148,7 @@ def main(args, energy_profiler_cls):
     )
 
     if args.verbose:
-        print("\nRaw data saved. Running statistical analysis…")
+        log.info("Raw data saved. Running statistical analysis\u2026")
 
     save_cleaned(
         history_with_smell,
@@ -162,7 +159,8 @@ def main(args, energy_profiler_cls):
     )
 
     if args.verbose:
-        print("Cleaned data and plots saved.")
+        log.ok("Cleaned data and plots saved.")
+        print()
 
 
 def cli():
@@ -170,10 +168,10 @@ def cli():
 
     if args.profiler == "mac":
         if sys.platform != "darwin":
-            print(
-                "Error: The 'mac' profiler (zeus_apple_silicon) is only available on macOS with Apple Silicon."
+            log.error(
+                "The 'mac' profiler (zeus_apple_silicon) is only available on macOS with Apple Silicon."
             )
-            print("Please use the 'carbon' profiler on this platform: uv run ET")
+            log.dim("Please use the 'carbon' profiler on this platform: uv run ET")
             sys.exit(1)
         from .measure.mac_energy_profiler import EnergyProfiler as macEnergyProfiler
 
