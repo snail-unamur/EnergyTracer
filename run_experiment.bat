@@ -18,53 +18,9 @@ set "BLUE=%ESC%[34m"
 set "MAGENTA=%ESC%[35m"
 set "CYAN=%ESC%[36m"
 
-REM === Argument parsing ===
-
-if "%~1"=="" (
-    echo   %RED%x%RST%  Machine argument is required.
-    goto :usage
-)
-
-REM Map machine name to architecture-specific profiler.
-REM Each iteration always runs both 'carbon' (cross-platform) and an
-REM architecture-specific profiler selected here.
-REM
-REM To add a new machine:
-REM   1. Add an 'else if' block:  ) else if /i "%%~1"=="<name>" ( set ARCH_PROFILER=<profiler-id> )
-REM      where <profiler-id> matches a --profiler value accepted by ET
-REM      (see src/utilities/parser.py for the list of choices).
-REM   2. Add the entry in :usage below.
-if /i "%~1"=="mac" (
-    set ARCH_PROFILER=mac
-REM ) else if /i "%~1"=="x86" (
-    REM set ARCH_PROFILER=x86
-    REM TODO: implement pyRAPL profiler
-REM ) else if /i "%~1"=="arm" (
-    REM set ARCH_PROFILER=arm
-    REM TODO: implement ARM profiler
-) else (
-    echo   %RED%x%RST%  Unknown machine '%BOLD%%~1%RST%'.
-    goto :usage
-)
-set MACHINE=%~1
-goto :start
-
-:usage
-echo.
-echo   %BOLD%Usage:%RST% %~nx0 %CYAN%^<machine^>%RST%
-echo.
-echo   %BOLD%Supported machines:%RST%
-echo     %GREEN%mac%RST%       CodeCarbon + mac (zeus_apple_silicon)
-echo     %DIM%# x86     CodeCarbon + pyRAPL      (coming soon)%RST%
-echo     %DIM%# arm     CodeCarbon + TBD         (coming soon)%RST%
-echo.
-echo   %BOLD%Example:%RST% %~nx0 mac
-echo.
-exit /b 1
-
-:start
-
 REM === Configuration ===
+REM Windows only supports the cross-platform CodeCarbon profiler.
+set PROFILER=carbon
 set BAR_WIDTH=30
 set WARMUP_RUNS=10
 set WARMUP_N=500
@@ -79,10 +35,9 @@ echo.
 echo   %BOLD%%GREEN%# EnergyTracer%RST% %DIM%- Experiment Runner (Windows)%RST%
 echo   %DIM%------------------------------------------------%RST%
 echo.
-echo   %BOLD%Machine%RST%      %GREEN%!MACHINE!%RST%
-echo   %BOLD%Profilers%RST%    %CYAN%carbon%RST% + %CYAN%!ARCH_PROFILER!%RST%
-echo   %BOLD%Warm-up%RST%      %WARMUP_RUNS% runs x 2 profilers %DIM%(n=%WARMUP_N%)%RST%
-echo   %BOLD%Measurement%RST%  %MEASURE_RUNS% runs x 2 profilers %DIM%(n=%MEASURE_N%)%RST%
+echo   %BOLD%Profiler%RST%     %CYAN%carbon%RST% (CodeCarbon)
+echo   %BOLD%Warm-up%RST%      %WARMUP_RUNS% runs %DIM%(n=%WARMUP_N%)%RST%
+echo   %BOLD%Measurement%RST%  %MEASURE_RUNS% runs %DIM%(n=%MEASURE_N%)%RST%
 echo   %BOLD%Cooldown%RST%     %COOLDOWN%s between measurements
 echo.
 echo   %YELLOW%!%RST%  Do not interrupt - results may be incomplete.
@@ -95,15 +50,10 @@ echo.
 
 call :get_seconds T0
 
-set /a "W_TOTAL=%WARMUP_RUNS% * 2"
+set /a "W_TOTAL=%WARMUP_RUNS%"
 for /L %%i in (1,1,%WARMUP_RUNS%) do (
-    uv run ET -p carbon -n %WARMUP_N% -o warmup-%%i --shuffle >nul 2>&1
-    set /a "_wp=%%i * 2 - 1"
-    call :show_progress !_wp! !W_TOTAL! !T0!
-
-    uv run ET -p !ARCH_PROFILER! -n %WARMUP_N% -o warmup-%%i --shuffle >nul 2>&1
-    set /a "_wp=%%i * 2"
-    call :show_progress !_wp! !W_TOTAL! !T0!
+    uv run ET -p %PROFILER% -n %WARMUP_N% -o warmup-%%i --shuffle >nul 2>&1
+    call :show_progress %%i !W_TOTAL! !T0!
 )
 
 call :end_phase !T0!
@@ -119,17 +69,11 @@ echo.
 
 call :get_seconds T0
 
-set /a "M_TOTAL=%MEASURE_RUNS% * 2"
+set /a "M_TOTAL=%MEASURE_RUNS%"
 for /L %%i in (1,1,%MEASURE_RUNS%) do (
     timeout /t %COOLDOWN% /nobreak >nul
-    uv run ET -p carbon -n %MEASURE_N% -o measure-%%i --shuffle >nul 2>&1
-    set /a "_mp=%%i * 2 - 1"
-    call :show_progress !_mp! !M_TOTAL! !T0!
-
-    timeout /t %COOLDOWN% /nobreak >nul
-    uv run ET -p !ARCH_PROFILER! -n %MEASURE_N% -o measure-%%i --shuffle >nul 2>&1
-    set /a "_mp=%%i * 2"
-    call :show_progress !_mp! !M_TOTAL! !T0!
+    uv run ET -p %PROFILER% -n %MEASURE_N% -o measure-%%i --shuffle >nul 2>&1
+    call :show_progress %%i !M_TOTAL! !T0!
 )
 
 call :end_phase !T0!

@@ -196,23 +196,27 @@ All energy metrics are estimated in millijoules (mJ), and CO₂ emissions are es
 
 ## Automated Measurement Script
 
-To facilitate repeated measurements and comparisons, a shell and batch script named `run_experiment.sh` and `run_experiment.bat` are provided. This script automates running the measurements with multiple phases (warm-up, measurement, cooldown) and ensures consistent parameters across runs.
+To facilitate repeated measurements and comparisons, shell and batch scripts are provided. They automate running the measurements with multiple phases (warm-up, measurement, cooldown) and ensure consistent parameters across runs.
 
-The script requires a **machine** argument that selects which architecture-specific profiler to run alongside CodeCarbon:
+**`run_experiment.sh`** (macOS / Linux) takes a **mode** argument:
 
-| Machine | Arch Profiler | Status |
+| Mode | Profilers run | Use case |
 |---|---|---|
-| `mac` | zeus_apple_silicon | Available |
-| `x86` | pyRAPL | Coming soon |
-| `arm` | TBD | Coming soon |
+| `mac` | `carbon` + `mac` (zeus_apple_silicon) | Apple Silicon machines |
+| `carbon` | `carbon` only | Any other platform |
 
 ```shell
-./run_experiment.sh mac      # macOS (Apple Silicon)
-# ./run_experiment.sh x86    # x86 Linux (coming soon)
-# ./run_experiment.sh arm    # ARM Linux (coming soon)
+./run_experiment.sh mac      # macOS (Apple Silicon): runs both profilers
+./run_experiment.sh carbon   # Any platform: runs CodeCarbon only
 ```
 
-Each iteration runs **two profilers**: `carbon` (cross-platform baseline) and the architecture-specific profiler selected by the machine argument. This facilitates running comparable tests across different machines (e.g., EC2 instances).
+**`run_experiment.bat`** (Windows) runs CodeCarbon only — no argument needed:
+
+```bat
+run_experiment.bat
+```
+
+When `mac` mode is selected, each iteration runs **two profilers** (`carbon` + `mac`), facilitating cross-profiler comparison. In `carbon` mode (or on Windows), only CodeCarbon is used.
 
 The script performs the following steps:
 
@@ -232,7 +236,7 @@ Running reliable energy experiments requires a **controlled environment**. The f
 Here is a quick summary of the key steps:
 
 1. **Prepare the environment** — close all non-essential apps, disconnect peripherals, plug in the charger, lock display/power settings, and ensure stable room temperature.
-2. **Run the automated script** — `./run_experiment.sh mac` handles warm-up, 30 measurement runs with cooldowns, and shuffled execution order. The argument selects the architecture-specific profiler to run alongside CodeCarbon (only `mac` is supported for now; `x86` and `arm` are planned).
+2. **Run the automated script** — `./run_experiment.sh mac` (Apple Silicon) or `./run_experiment.sh carbon` (any platform). The script handles warm-up, 30 measurement runs with cooldowns, and shuffled execution order.
 3. **Do not interact** with the machine while the experiment is running.
 4. **Analyze the results** — inspect the generated plots and CSV files; look for consistent differences, low variance, and check for outliers.
 

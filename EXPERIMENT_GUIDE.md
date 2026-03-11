@@ -21,12 +21,17 @@ Before launching the experiment, go through this checklist:
 Then simply run:
 
 ```shell
-./run_experiment.sh mac      # macOS (Apple Silicon)
-# ./run_experiment.sh x86    # x86 Linux (coming soon)
-# ./run_experiment.sh arm    # ARM Linux (coming soon)
+./run_experiment.sh mac      # macOS (Apple Silicon): carbon + mac
+./run_experiment.sh carbon   # Any platform: CodeCarbon only
 ```
 
-The argument selects the architecture-specific profiler to run alongside CodeCarbon. Run the script without arguments to see the list of supported machines.
+On Windows, the batch script runs CodeCarbon only (no argument needed):
+
+```bat
+run_experiment.bat
+```
+
+The `mac` mode runs both `carbon` and `mac` profilers per iteration. The `carbon` mode runs CodeCarbon only. Run the shell script without arguments to see the usage.
 
 ---
 
@@ -63,7 +68,7 @@ Lock all settings that could shift mid-experiment:
 
 ## 2. Run the Experiment
 
-The automated script (`run_experiment.sh` / `run_experiment.bat`) executes all the steps described below. It requires a **machine** argument (e.g., `mac`) that selects which architecture-specific profiler to run alongside CodeCarbon. Only `mac` is available for now; `x86` and `arm` are planned. Understanding the phases helps you verify that the protocol is sound.
+The automated script (`run_experiment.sh` / `run_experiment.bat`) executes all the steps described below. The shell script takes a **mode** argument: `mac` (runs both `carbon` and `mac` profilers) or `carbon` (runs CodeCarbon only). The Windows batch script always runs CodeCarbon only. Understanding the phases helps you verify that the protocol is sound.
 
 ### 2.1 Warm-Up Phase
 

@@ -30,36 +30,36 @@ dim()   { printf "  ${DIM}%b${RST}\n" "$*"; }
 
 usage() {
     echo ""
-    printf "  ${BOLD}Usage:${RST} $0 ${CYAN}<machine>${RST}\n"
+    printf "  ${BOLD}Usage:${RST} $0 ${CYAN}<mode>${RST}\n"
     echo ""
-    printf "  ${BOLD}Supported machines:${RST}\n"
+    printf "  ${BOLD}Supported modes:${RST}\n"
     printf "    ${GREEN}mac${RST}       CodeCarbon + mac (zeus_apple_silicon)\n"
-    printf "    ${DIM}# x86     CodeCarbon + pyRAPL      (coming soon)${RST}\n"
-    printf "    ${DIM}# arm     CodeCarbon + TBD         (coming soon)${RST}\n"
+    printf "    ${GREEN}carbon${RST}    CodeCarbon only (cross-platform)\n"
     echo ""
-    printf "  ${BOLD}Example:${RST} $0 mac\n"
+    printf "  ${BOLD}Examples:${RST}\n"
+    printf "    $0 mac       ${DIM}# Apple Silicon: runs both profilers${RST}\n"
+    printf "    $0 carbon    ${DIM}# Any platform: runs CodeCarbon only${RST}\n"
     echo ""
     exit 1
 }
 
-# Map machine name -> architecture-specific profiler.
-# Each iteration always runs both 'carbon' (cross-platform) and an
-# architecture-specific profiler selected here.
-#
-# To add a new machine:
-#   1. Add a line:   <n>)  ARCH_PROFILER="<profiler-id>" ;;
-#      where <profiler-id> matches a --profiler value accepted by ET
-#      (see src/utilities/parser.py for the list of choices).
-#   2. Uncomment / add the entry in usage() above.
+# Map mode -> profiler list.
+#   mac    → runs both 'carbon' and 'mac'
+#   carbon → runs 'carbon' only
 case "$1" in
-    mac)  ARCH_PROFILER="mac" ;;
-    # x86)  ARCH_PROFILER="x86" ;;   # TODO: implement pyRAPL profiler
-    # arm)  ARCH_PROFILER="arm" ;;   # TODO: implement ARM profiler
-    "")   error "Machine argument is required."; usage ;;
-    *)    error "Unknown machine '${BOLD}$1${RST}'."; usage ;;
+    mac)
+        MACHINE="mac"
+        PROFILERS="carbon mac"
+        ;;
+    carbon)
+        MACHINE="carbon"
+        PROFILERS="carbon"
+        ;;
+    "")   error "Mode argument is required."; usage ;;
+    *)    error "Unknown mode '${BOLD}$1${RST}'."; usage ;;
 esac
 
-MACHINE="$1"
+NUM_PROFILERS=$(echo $PROFILERS | wc -w | tr -d ' ')
 
 # ── Configuration ────────────────────────────────────────
 
@@ -89,7 +89,7 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-if [ "$IS_SSH" = "1" ] && [ "$MACHINE" = "mac" ]; then
+if [ "$IS_SSH" = "1" ] && echo "$PROFILERS" | grep -q mac; then
     # shellcheck source=lib/ssh_setup.sh
     . "$SCRIPT_DIR/lib/ssh_setup.sh" || exit 1
 fi
@@ -151,9 +151,9 @@ printf "  ${DIM}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 printf "  ${BOLD}Machine${RST}      ${GREEN}%s${RST}\n" "$MACHINE"
 printf "  ${BOLD}Mode${RST}         %s\n" "$([ "$IS_SSH" = "1" ] && printf "${CYAN}SSH (tmux)${RST}" || printf "${MAGENTA}Local${RST}")"
-printf "  ${BOLD}Profilers${RST}    ${CYAN}carbon${RST} + ${CYAN}%s${RST}\n" "$ARCH_PROFILER"
-printf "  ${BOLD}Warm-up${RST}      %d runs × 2 profilers ${DIM}(n=%d)${RST}\n" "$WARMUP_RUNS" "$WARMUP_N"
-printf "  ${BOLD}Measurement${RST}  %d runs × 2 profilers ${DIM}(n=%d)${RST}\n" "$MEASURE_RUNS" "$MEASURE_N"
+printf "  ${BOLD}Profilers${RST}    ${CYAN}%s${RST}\n" "$PROFILERS"
+printf "  ${BOLD}Warm-up${RST}      %d runs × %d profiler(s) ${DIM}(n=%d)${RST}\n" "$WARMUP_RUNS" "$NUM_PROFILERS" "$WARMUP_N"
+printf "  ${BOLD}Measurement${RST}  %d runs × %d profiler(s) ${DIM}(n=%d)${RST}\n" "$MEASURE_RUNS" "$NUM_PROFILERS" "$MEASURE_N"
 printf "  ${BOLD}Cooldown${RST}     %ds between measurements\n" "$COOLDOWN"
 echo ""
 warn "Do not interrupt — results may be incomplete."
@@ -167,15 +167,16 @@ echo ""
 printf "  ${BOLD}${BLUE}▸ Phase 1/2: Warm-up${RST}\n"
 echo ""
 
-W_TOTAL=$((WARMUP_RUNS * 2))
+W_TOTAL=$((WARMUP_RUNS * NUM_PROFILERS))
 T0=$(date +%s)
+_w_done=0
 
 for i in $(seq 1 $WARMUP_RUNS); do
-    uv run ET -p carbon -n "$WARMUP_N" -o "warmup-$i" --shuffle >/dev/null 2>&1
-    show_progress $((i * 2 - 1)) "$W_TOTAL" "$T0"
-
-    uv run ET -p "$ARCH_PROFILER" -n "$WARMUP_N" -o "warmup-$i" --shuffle >/dev/null 2>&1
-    show_progress $((i * 2)) "$W_TOTAL" "$T0"
+    for _p in $PROFILERS; do
+        uv run ET -p "$_p" -n "$WARMUP_N" -o "warmup-$i" --shuffle >/dev/null 2>&1
+        _w_done=$((_w_done + 1))
+        show_progress "$_w_done" "$W_TOTAL" "$T0"
+    done
 done
 
 end_phase "$T0"
@@ -198,17 +199,17 @@ echo ""
 printf "  ${BOLD}${BLUE}▸ Phase 2/2: Measurement${RST}\n"
 echo ""
 
-M_TOTAL=$((MEASURE_RUNS * 2))
+M_TOTAL=$((MEASURE_RUNS * NUM_PROFILERS))
 T0=$(date +%s)
+_m_done=0
 
 for i in $(seq 1 $MEASURE_RUNS); do
-    sleep "$COOLDOWN"
-    uv run ET -p carbon -n "$MEASURE_N" -o "measure-$i" --shuffle >/dev/null 2>&1
-    show_progress $((i * 2 - 1)) "$M_TOTAL" "$T0"
-
-    sleep "$COOLDOWN"
-    uv run ET -p "$ARCH_PROFILER" -n "$MEASURE_N" -o "measure-$i" --shuffle >/dev/null 2>&1
-    show_progress $((i * 2)) "$M_TOTAL" "$T0"
+    for _p in $PROFILERS; do
+        sleep "$COOLDOWN"
+        uv run ET -p "$_p" -n "$MEASURE_N" -o "measure-$i" --shuffle >/dev/null 2>&1
+        _m_done=$((_m_done + 1))
+        show_progress "$_m_done" "$M_TOTAL" "$T0"
+    done
 done
 
 end_phase "$T0"
