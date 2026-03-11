@@ -33,27 +33,34 @@ usage() {
     printf "  ${BOLD}Usage:${RST} $0 ${CYAN}<mode>${RST}\n"
     echo ""
     printf "  ${BOLD}Supported modes:${RST}\n"
-    printf "    ${GREEN}mac${RST}       CodeCarbon + mac (zeus_apple_silicon)\n"
     printf "    ${GREEN}carbon${RST}    CodeCarbon only (cross-platform)\n"
+    printf "    ${GREEN}mac${RST}       mac profiler only (Apple Silicon)\n"
+    printf "    ${GREEN}both${RST}      CodeCarbon + mac (Apple Silicon)\n"
     echo ""
     printf "  ${BOLD}Examples:${RST}\n"
-    printf "    $0 mac       ${DIM}# Apple Silicon: runs both profilers${RST}\n"
     printf "    $0 carbon    ${DIM}# Any platform: runs CodeCarbon only${RST}\n"
+    printf "    $0 mac       ${DIM}# Apple Silicon: runs mac profiler only${RST}\n"
+    printf "    $0 both      ${DIM}# Apple Silicon: runs both profilers${RST}\n"
     echo ""
     exit 1
 }
 
 # Map mode -> profiler list.
-#   mac    → runs both 'carbon' and 'mac'
 #   carbon → runs 'carbon' only
+#   mac    → runs 'mac' only
+#   both   → runs both 'carbon' and 'mac'
 case "$1" in
-    mac)
-        MACHINE="mac"
-        PROFILERS="carbon mac"
-        ;;
     carbon)
         MACHINE="carbon"
         PROFILERS="carbon"
+        ;;
+    mac)
+        MACHINE="mac"
+        PROFILERS="mac"
+        ;;
+    both)
+        MACHINE="mac"
+        PROFILERS="carbon mac"
         ;;
     "")   error "Mode argument is required."; usage ;;
     *)    error "Unknown mode '${BOLD}$1${RST}'."; usage ;;
