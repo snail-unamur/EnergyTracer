@@ -3,6 +3,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from src.utilities import log
+
 from .utilities.metrics_extractors import extract_metrics
 from .utilities.padding import pad
 
@@ -223,6 +225,12 @@ def plot_moustache(df: pd.DataFrame, metric: str, filename: str, unit: str = "mJ
     data_with_smell = df[f"{metric.upper()} with code smell"].dropna()
     data_without_smell = df[f"{metric.upper()} without code smell"].dropna()
 
+    if data_with_smell.empty or data_without_smell.empty:
+        log.warn(
+            f"Skipping moustache plot for '{metric}': one or both datasets are empty."
+        )
+        return
+
     plt.boxplot(
         [data_with_smell, data_without_smell],
         tick_labels=["With code smell", "Without code smell"],
@@ -251,6 +259,12 @@ def plot_violin(df: pd.DataFrame, metric: str, filename: str, unit: str = "mJ"):
     """
     data_with_smell = df[f"{metric.upper()} with code smell"].dropna()
     data_without_smell = df[f"{metric.upper()} without code smell"].dropna()
+
+    if data_with_smell.empty or data_without_smell.empty:
+        log.warn(
+            f"Skipping violin plot for '{metric}': one or both datasets are empty."
+        )
+        return
 
     plt.figure(figsize=(10, 6))
 
