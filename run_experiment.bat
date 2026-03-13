@@ -29,6 +29,22 @@ set MEASURE_N=1000
 set COOLDOWN=60
 set OUTPUT_DIR=output
 
+REM === Optional arguments ===
+REM   %1 = warmup_n   (default: 500)
+REM   %2 = measure_n  (default: 1000)
+if /i "%~1"=="/h" goto :usage
+if /i "%~1"=="-h" goto :usage
+if /i "%~1"=="--help" goto :usage
+
+if not "%~1"=="" call :validate_positive_int "%~1" WARMUP_N || goto :usage
+if not "%~2"=="" call :validate_positive_int "%~2" MEASURE_N || goto :usage
+
+if not "%~3"=="" (
+    echo.
+    echo   %RED%x%RST%  Too many arguments.
+    goto :usage
+)
+
 call :get_seconds GLOBAL_START
 
 echo.
@@ -103,9 +119,33 @@ echo.
 endlocal
 exit /b 0
 
+:usage
+echo.
+echo   %BOLD%Usage:%RST% %~nx0 [warmup_n] [measure_n]
+echo.
+echo   %BOLD%Optional args:%RST%
+echo     warmup_n   Code iterations per warm-up run  ^(default: 500^)
+echo     measure_n  Code iterations per measurement run  ^(default: 1000^)
+echo.
+echo   %BOLD%Examples:%RST%
+echo     %~nx0
+echo     %~nx0 300 900
+echo.
+exit /b 1
+
 REM ============================================================
 REM Subroutines
 REM ============================================================
+
+:validate_positive_int
+REM %~1=value  %~2=target_var
+echo(%~1| findstr /r "^[1-9][0-9]*$" >nul || (
+    echo.
+    echo   %RED%x%RST%  Invalid value '%~1' for %~2 ^(must be a positive integer^).
+    exit /b 1
+)
+set "%~2=%~1"
+exit /b 0
 
 :get_seconds
 REM Stores seconds since midnight in variable named %~1.

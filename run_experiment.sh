@@ -30,19 +30,31 @@ dim()   { printf "  ${DIM}%b${RST}\n" "$*"; }
 
 usage() {
     echo ""
-    printf "  ${BOLD}Usage:${RST} $0 ${CYAN}<mode>${RST}\n"
+    printf "  ${BOLD}Usage:${RST} $0 ${CYAN}<mode>${RST} [${CYAN}warmup_n${RST}] [${CYAN}measure_n${RST}]\n"
     echo ""
     printf "  ${BOLD}Supported modes:${RST}\n"
     printf "    ${GREEN}carbon${RST}    CodeCarbon only (cross-platform)\n"
     printf "    ${GREEN}mac${RST}       mac profiler only (Apple Silicon)\n"
     printf "    ${GREEN}both${RST}      CodeCarbon + mac (Apple Silicon)\n"
     echo ""
+    printf "  ${BOLD}Optional args:${RST}\n"
+    printf "    ${CYAN}warmup_n${RST}   Code iterations per warm-up run ${DIM}(default: 500)${RST}\n"
+    printf "    ${CYAN}measure_n${RST}  Code iterations per measurement run ${DIM}(default: 1000)${RST}\n"
+    echo ""
     printf "  ${BOLD}Examples:${RST}\n"
-    printf "    $0 carbon    ${DIM}# Any platform: runs CodeCarbon only${RST}\n"
-    printf "    $0 mac       ${DIM}# Apple Silicon: runs mac profiler only${RST}\n"
-    printf "    $0 both      ${DIM}# Apple Silicon: runs both profilers${RST}\n"
+    printf "    $0 carbon          ${DIM}# Any platform: runs CodeCarbon only${RST}\n"
+    printf "    $0 mac 300 900     ${DIM}# Apple Silicon: custom warm-up/measure iterations${RST}\n"
+    printf "    $0 both 500 1000   ${DIM}# Apple Silicon: runs both profilers${RST}\n"
     echo ""
     exit 1
+}
+
+is_positive_int() {
+    case "$1" in
+        ''|*[!0-9]*) return 1 ;;
+        0) return 1 ;;
+        *) return 0 ;;
+    esac
 }
 
 # Map mode -> profiler list.
@@ -66,6 +78,25 @@ case "$1" in
     *)    error "Unknown mode '${BOLD}$1${RST}'."; usage ;;
 esac
 
+WARMUP_N=500
+MEASURE_N=1000
+
+if [ -n "$2" ]; then
+    if ! is_positive_int "$2"; then
+        error "Invalid warmup_n '${BOLD}$2${RST}' (must be a positive integer)."
+        usage
+    fi
+    WARMUP_N="$2"
+fi
+
+if [ -n "$3" ]; then
+    if ! is_positive_int "$3"; then
+        error "Invalid measure_n '${BOLD}$3${RST}' (must be a positive integer)."
+        usage
+    fi
+    MEASURE_N="$3"
+fi
+
 NUM_PROFILERS=$(echo $PROFILERS | wc -w | tr -d ' ')
 
 # ── Configuration ────────────────────────────────────────
@@ -73,10 +104,8 @@ NUM_PROFILERS=$(echo $PROFILERS | wc -w | tr -d ' ')
 BAR_WIDTH=30
 
 WARMUP_RUNS=10          # Number of warm-up iterations
-WARMUP_N=500            # Code iterations per warm-up run
 
 MEASURE_RUNS=30         # Number of measurement iterations
-MEASURE_N=1000          # Code iterations per measurement run
 COOLDOWN=60             # Sleep duration (seconds) between measurements
 
 OUTPUT_DIR="output"
