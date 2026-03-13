@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -206,12 +207,20 @@ def plot_specific_metrics(
         (line,) = plt.plot(
             df["Iteration"], df[col], label=f"{metric.upper()} {variant}"
         )
+
+        is_co2 = metric.lower() == "co2"
+        scale_factor = 10 ** count_leading_zeros(avg) if is_co2 else 1
+        scale_suffix = " x 10^" + str(count_leading_zeros(avg)) if is_co2 else ""
+        label = (
+            f"Avg {variant}: {avg * scale_factor:.3f} {scale_suffix}{unit} / iteration"
+        )
+
         plt.axhline(
             y=avg,
             color=line.get_color(),
             linestyle="--",
             alpha=0.5,
-            label=f"Avg {variant}: {avg:.3f} {unit} / iteration",
+            label=label,
         )
 
     plt.xlabel("Iteration")
@@ -221,6 +230,12 @@ def plot_specific_metrics(
     plt.grid(True)
     plt.savefig(filename, dpi=FIGURE_DPI)
     plt.close()
+
+
+def count_leading_zeros(x: float) -> int:
+    if x <= 0:
+        raise ValueError("x doit être positif")
+    return max(0, -math.floor(math.log10(x)) - 1)
 
 
 def plot_moustache(df: pd.DataFrame, metric: str, filename: str, unit: str = "mJ"):
