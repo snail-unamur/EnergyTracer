@@ -7,30 +7,24 @@ wheels/
 *.egg-info
 .pytest_cache/
 
-# ── Virtual environments ──
+# ── Virtual environments ──────────────────────────────────────────────────────
 .venv
 
-# ── OS-specific ──
+# ── OS-specific ───────────────────────────────────────────────────────────────
 .DS_Store
 
-# ── Project-specific ──
-# Code under measurement
+# ── Project-specific ──────────────────────────────────────────────────────────
 src/python/*
 
-# Experiment output
 output/*
-
-# Experiment results
 results/*
 
-# ── Testing ──
+powermetrics_log.txt
+
+# ── Testing ───────────────────────────────────────────────────────────────────
 .coverage
 htmlcov/
 coverage.xml
 
-# ── Linting ──
+# ── Linting ───────────────────────────────────────────────────────────────────
 .ruff_cache/
-
-# ── Energy profiling ──
-# CodeCarbon temporary log file
-powermetrics_log.txt
