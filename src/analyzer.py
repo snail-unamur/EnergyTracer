@@ -25,12 +25,17 @@ def main(args):
         None. Side effects: creates the results directory and triggers the
         full analysis pipeline.
     """
+    global ANALYSIS_DIR
+    log.debug(f"Analyzer invoked with arguments: {args}")
+
     if args.verbose:
         log.header("EnergyTracer Analyzer Configuration")
         log.dim(f"Input directory:  {args.path}")
-        log.dim(f"Output directory: {ANALYSIS_DIR}")
+        log.dim(f"Output directory: {args.path}/{ANALYSIS_DIR}")
 
-    Path(ANALYSIS_DIR).mkdir(exist_ok=True)
+    ANALYSIS_DIR = Path(args.path) / ANALYSIS_DIR
+
+    ANALYSIS_DIR.mkdir(exist_ok=True)
 
     process_csv_files(Path(args.path), verbose=args.verbose)
 
@@ -64,17 +69,17 @@ def process_csv_files(input_dir: Path, verbose: bool = False) -> None:
     all_csv_files = list(input_dir.rglob("*.csv"))
 
     if not all_csv_files:
-        log.warn(f"No CSV files found under '{input_dir}' — nothing to process.")
+        log.warn(f"No CSV files found under '{input_dir}' - nothing to process.")
         return
 
     if verbose:
         log.header("Scanning for CSV files…")
 
-    csv_files_by_group = classify_csv_files_by_group(all_csv_files)
+    csv_files_by_group = classify_csv_files_by_group(all_csv_files, input_dir)
 
     if not csv_files_by_group:
         log.warn(
-            "No CSV files matched the expected directory structure — nothing to merge."
+            "No CSV files matched the expected directory structure - nothing to merge."
         )
         return
 
@@ -88,7 +93,9 @@ def process_csv_files(input_dir: Path, verbose: bool = False) -> None:
     generate_statistical_reports(merged_file_paths, verbose=verbose)
 
 
-def classify_csv_files_by_group(all_csv_files: list[Path]) -> dict[tuple, list]:
+def classify_csv_files_by_group(
+    all_csv_files: list[Path], input_dir: Path
+) -> dict[tuple, list]:
     """
     Classify a flat list of CSV files into groups keyed by
     (profiler, data_type, smell_type).
@@ -96,7 +103,7 @@ def classify_csv_files_by_group(all_csv_files: list[Path]) -> dict[tuple, list]:
     Input:
         all_csv_files (list[Path]): list of CSV file paths to classify.
             Each path is expected to contain:
-              - an "output/<profiler>/" segment to identify the profiler,
+              - an "{input_dir}/<profiler>/" segment to identify the profiler,
               - a "cleaned" or "raw" segment to identify the data type,
               - "with_smell" or "without_smell" in the filename stem.
 
@@ -112,8 +119,9 @@ def classify_csv_files_by_group(all_csv_files: list[Path]) -> dict[tuple, list]:
     csv_files_by_group: dict[tuple, list] = defaultdict(list)
     for csv_file in all_csv_files:
         parts = csv_file.parts
+        first_folder = input_dir.parts[-1]
         try:
-            profiler = parts[parts.index("output") + 1]
+            profiler = parts[parts.index(first_folder) + 1]
         except ValueError:
             log.warn(f"Skipping {csv_file}: could not determine profiler.")
             continue
@@ -226,7 +234,7 @@ def generate_statistical_reports(
             or without_smell_key not in merged_file_paths
         ):
             log.warn(
-                f"[{profiler}][{data_type}] missing one variant — skipping report."
+                f"[{profiler}][{data_type}] missing one variant - skipping report."
             )
             continue
 
@@ -235,7 +243,7 @@ def generate_statistical_reports(
 
         if df_with_smell.empty or df_without_smell.empty:
             log.warn(
-                f"[{profiler}][{data_type}] one or both CSVs are empty — skipping report."
+                f"[{profiler}][{data_type}] one or both CSVs are empty - skipping report."
             )
             continue
 
