@@ -35,7 +35,7 @@ def main(args):
 
     ANALYSIS_DIR = Path(args.path) / ANALYSIS_DIR
 
-    ANALYSIS_DIR.mkdir(exist_ok=True)
+    ANALYSIS_DIR.mkdir(exist_ok=True, parents=True)
 
     process_csv_files(Path(args.path), verbose=args.verbose)
 

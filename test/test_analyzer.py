@@ -73,8 +73,8 @@ def mocked_csv_files(tmp_path):
 
 
 @pytest.mark.unit
-def test_classify_csv_files_by_group_valid_files(mocked_csv_files):
-    result = classify_csv_files_by_group(mocked_csv_files)
+def test_classify_csv_files_by_group_valid_files(mocked_csv_files, tmp_path):
+    result = classify_csv_files_by_group(mocked_csv_files, tmp_path / "output")
 
     assert ("profiler1", "cleaned", "with_smell") in result
     assert ("profiler1", "cleaned", "without_smell") in result
@@ -84,17 +84,17 @@ def test_classify_csv_files_by_group_valid_files(mocked_csv_files):
 
 
 @pytest.mark.unit
-def test_classify_csv_files_by_group_skips_invalid_path(mocked_csv_files):
+def test_classify_csv_files_by_group_skips_invalid_path(mocked_csv_files, tmp_path):
     # The fixture contains one file under "invalid/path/" — it must be skipped
-    result = classify_csv_files_by_group(mocked_csv_files)
+    result = classify_csv_files_by_group(mocked_csv_files, tmp_path / "output")
 
     all_files = [f for files in result.values() for f in files]
     assert not any("invalid" in str(f) for f in all_files)
 
 
 @pytest.mark.unit
-def test_classify_csv_files_by_group_empty_input():
-    assert classify_csv_files_by_group([]) == {}
+def test_classify_csv_files_by_group_empty_input(tmp_path):
+    assert classify_csv_files_by_group([], tmp_path / "output") == {}
 
 
 @pytest.mark.unit
@@ -104,7 +104,7 @@ def test_classify_csv_files_by_group_no_data_type_segment(tmp_path):
     csv_file.parent.mkdir(parents=True)
     csv_file.touch()
 
-    result = classify_csv_files_by_group([csv_file])
+    result = classify_csv_files_by_group([csv_file], tmp_path / "output")
 
     assert result == {}
 
@@ -116,7 +116,7 @@ def test_classify_csv_files_by_group_no_smell_segment(tmp_path):
     csv_file.parent.mkdir(parents=True)
     csv_file.touch()
 
-    result = classify_csv_files_by_group([csv_file])
+    result = classify_csv_files_by_group([csv_file], tmp_path / "output")
 
     assert result == {}
 
