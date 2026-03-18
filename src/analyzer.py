@@ -9,7 +9,8 @@ from src.utilities.parser import parse_arguments
 from .analysis.generate_report import generate_pr_report
 from .utilities import log
 
-ANALYSIS_DIR = Path("results")
+_DEFAULT_ANALYSIS_DIR = Path("results")
+ANALYSIS_DIR = _DEFAULT_ANALYSIS_DIR
 
 
 def main(args):
@@ -22,8 +23,10 @@ def main(args):
             - verbose (bool): whether to display progress and debug information.
 
     Output:
-        None. Side effects: creates the results directory and triggers the
-        full analysis pipeline.
+        None.
+
+    Note:
+        triggers the full analysis pipeline, which creates the results directory on first write.
     """
     global ANALYSIS_DIR
     log.debug(f"Analyzer invoked with arguments: {args}")
@@ -31,11 +34,9 @@ def main(args):
     if args.verbose:
         log.header("EnergyTracer Analyzer Configuration")
         log.dim(f"Input directory:  {args.path}")
-        log.dim(f"Output directory: {args.path}/{ANALYSIS_DIR}")
+        log.dim(f"Output directory: {args.path}/{_DEFAULT_ANALYSIS_DIR}")
 
-    ANALYSIS_DIR = Path(args.path) / ANALYSIS_DIR
-
-    ANALYSIS_DIR.mkdir(exist_ok=True, parents=True)
+    ANALYSIS_DIR = Path(args.path) / _DEFAULT_ANALYSIS_DIR
 
     process_csv_files(Path(args.path), verbose=args.verbose)
 
