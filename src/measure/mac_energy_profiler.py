@@ -16,37 +16,54 @@ class EnergyProfiler(AbstractEnergyProfiler):
     def __init__(self, verbose=False):
         self.monitor = AppleEnergyMonitor()
         self.history = []
+        self._durations = []
+        self._started = False
         self.verbose = verbose
 
     def measure_once(self, label: str, fn) -> dict:
         """
-        Measures energy consumed during a single execution of fn.
-
-        Inputs
-        ------
-            label: A unique string label for the measurement window.
-            fn: A callable to execute and measure.
-
-        Returns
-        -------
-            A dict with keys: i, cpu_mj, gpu_mj, ane_mj, dram_mj, time_s.
+        Executes fn and records its wall-clock duration.
+        Energy is computed later when finalize() is called to avoid overhead.
         """
-        self.monitor.begin_window(label)
+        if not self._started:
+            self.monitor.begin_window("total_run")
+            self._started = True
+
         t0 = time.perf_counter()
         fn()
-        metrics = self.monitor.end_window(label)
         t1 = time.perf_counter()
-        entry = {
-            "i": len(self.history),
-            "cpu_mj": metrics.cpu_total_mj,
-            "gpu_mj": metrics.gpu_mj,
-            "ane_mj": metrics.ane_mj,
-            "dram_mj": metrics.dram_mj,
-            "time_s": t1 - t0,
-        }
-        self.history.append(entry)
-        return entry
+
+        self._durations.append(t1 - t0)
+        return {}
 
     def finalize(self):
-        """No post-processing needed for Zeus — data is already per-iteration."""
-        pass
+        """
+        Stops the monitor and distributes total energy across iterations
+        proportionally to each iteration's wall-clock duration.
+        """
+        if self._started:
+            metrics = self.monitor.end_window("total_run")
+            self._started = False
+
+            total_cpu_mj = metrics.cpu_total_mj or 0.0
+            total_gpu_mj = metrics.gpu_mj or 0.0
+            total_ane_mj = metrics.ane_mj or 0.0
+            total_dram_mj = metrics.dram_mj or 0.0
+
+            total_time = sum(self._durations)
+            self.history = []
+
+            for i, dt in enumerate(self._durations):
+                ratio = (
+                    dt / total_time if total_time > 0 else 1.0 / len(self._durations)
+                )
+                self.history.append(
+                    {
+                        "i": i,
+                        "cpu_mj": total_cpu_mj * ratio,
+                        "gpu_mj": total_gpu_mj * ratio,
+                        "ane_mj": total_ane_mj * ratio,
+                        "dram_mj": total_dram_mj * ratio,
+                        "time_s": dt,
+                    }
+                )

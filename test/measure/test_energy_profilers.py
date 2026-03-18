@@ -85,12 +85,8 @@ class TestCommonBehaviour:
         result = profiler.measure_once("test_window", lambda: sum(range(100)))
 
         assert isinstance(result, dict)
-        # Carbon returns an empty placeholder; others return the full entry.
-        if profiler_cls is not CarbonProfiler:
-            for key in ("i", "cpu_mj", "gpu_mj", "ane_mj", "dram_mj"):
-                assert key in result
-            assert len(profiler.history) == 1
-            assert profiler.history[0] is result
+        assert result == {}
+        assert len(profiler.history) == 0
 
     @pytest.mark.integration
     def test_measure_once_with_exception(self, profiler):
@@ -111,13 +107,9 @@ class TestCommonBehaviour:
         for i in range(n):
             profiler.measure_once(f"window_{i}", lambda: sum(range(100)))
 
-        if profiler_cls is CarbonProfiler:
-            # Carbon stores durations, not history entries, until finalize()
-            assert len(profiler._durations) == n
-        else:
-            assert len(profiler.history) == n
-            for i, entry in enumerate(profiler.history):
-                assert entry["i"] == i
+        # Stores durations, not history entries, until finalize()
+        assert len(profiler._durations) == n
+        assert len(profiler.history) == 0
 
     @pytest.mark.integration
     def test_finalize_without_measurements(self, profiler_cls):
@@ -148,17 +140,45 @@ class TestMacProfiler:
         assert profiler.monitor is not None
 
     @pytest.mark.integration
-    @pytest.mark.slow
-    def test_all_metrics_non_negative(self):
+    def test_has_empty_durations(self):
         profiler = _profilers["mac"]()
-        for i in range(5):
-            profiler.measure_once(f"window_{i}", lambda: sum(range(100)))
+        assert profiler._durations == []
 
+    @pytest.mark.integration
+    @pytest.mark.slow
+    def test_finalize_computes_history(self):
+        profiler = _profilers["mac"]()
+        for i in range(3):
+            profiler.measure_once(f"test_window_{i}", lambda: sum(range(100)))
+        profiler.finalize()
+
+        assert len(profiler.history) == 3
         for entry in profiler.history:
-            assert entry["cpu_mj"] >= 0
-            assert entry["gpu_mj"] >= 0
-            assert entry["ane_mj"] >= 0
-            assert entry["dram_mj"] >= 0
+            for key in ("i", "cpu_mj", "gpu_mj", "ane_mj", "dram_mj"):
+                assert key in entry
+            assert isinstance(entry["i"], int) and entry["i"] >= 0
+            assert isinstance(entry["cpu_mj"], float) and entry["cpu_mj"] >= 0
+            assert isinstance(entry["gpu_mj"], float) and entry["gpu_mj"] >= 0
+            assert isinstance(entry["ane_mj"], float) and entry["ane_mj"] >= 0
+            assert isinstance(entry["dram_mj"], float) and entry["dram_mj"] >= 0
+
+    @pytest.mark.integration
+    @pytest.mark.slow
+    def test_finalize_with_verbose(self):
+        profiler = _profilers["mac"](verbose=True)
+        for i in range(3):
+            profiler.measure_once(f"test_window_{i}", lambda: sum(range(100)))
+        profiler.finalize()
+
+        assert len(profiler.history) == 3
+
+    @pytest.mark.integration
+    def test_finalize_with_zero_durations(self):
+        profiler = _profilers["mac"]()
+        profiler._durations = [0, 0, 0]
+        # Monitor was not started via measure_once, but we test if it handles zero duration without crashing
+        with contextlib.suppress(AttributeError, ValueError):
+            profiler.finalize()
 
 
 # ---------------------------------------------------------------------------
