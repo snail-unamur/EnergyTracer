@@ -88,10 +88,10 @@ class EnergyProfiler(AbstractEnergyProfiler):
             self.history.append(
                 {
                     "i": i,
-                    "cpu_mJ": total_cpu_mJ * ratio,
-                    "gpu_mJ": total_gpu_mJ * ratio,
-                    "ane_mJ": total_co2_g * ratio,
-                    "dram_mJ": total_ram_mJ * ratio,
+                    "cpu_mj": total_cpu_mJ * ratio,
+                    "gpu_mj": total_gpu_mJ * ratio,
+                    "ane_mj": total_co2_g * ratio,
+                    "dram_mj": total_ram_mJ * ratio,
                     "time_s": dt,
                 }
             )

@@ -154,13 +154,14 @@ class TestMacProfiler:
 
         assert len(profiler.history) == 3
         for entry in profiler.history:
-            for key in ("i", "cpu_mj", "gpu_mj", "ane_mj", "dram_mj"):
+            for key in ("i", "cpu_mj", "gpu_mj", "ane_mj", "dram_mj", "time_s"):
                 assert key in entry
             assert isinstance(entry["i"], int) and entry["i"] >= 0
             assert isinstance(entry["cpu_mj"], float) and entry["cpu_mj"] >= 0
             assert isinstance(entry["gpu_mj"], float) and entry["gpu_mj"] >= 0
             assert isinstance(entry["ane_mj"], float) and entry["ane_mj"] >= 0
             assert isinstance(entry["dram_mj"], float) and entry["dram_mj"] >= 0
+            assert isinstance(entry["time_s"], float) and entry["time_s"] >= 0
 
     @pytest.mark.integration
     @pytest.mark.slow
@@ -210,13 +211,14 @@ class TestCarbonProfiler:
 
         assert len(profiler.history) == 3
         for entry in profiler.history:
-            for key in ("i", "cpu_mj", "gpu_mj", "ane_mj", "dram_mj"):
+            for key in ("i", "cpu_mj", "gpu_mj", "ane_mj", "dram_mj", "time_s"):
                 assert key in entry
             assert isinstance(entry["i"], int) and entry["i"] >= 0
             assert isinstance(entry["cpu_mj"], float) and entry["cpu_mj"] >= 0
             assert isinstance(entry["gpu_mj"], float) and entry["gpu_mj"] >= 0
             assert isinstance(entry["ane_mj"], float) and entry["ane_mj"] >= 0
             assert isinstance(entry["dram_mj"], float) and entry["dram_mj"] >= 0
+            assert isinstance(entry["time_s"], float) and entry["time_s"] >= 0
 
     @pytest.mark.integration
     @pytest.mark.slow
