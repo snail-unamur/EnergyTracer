@@ -169,6 +169,10 @@ def generate_pr_report(
 
         lines.append("\n")
 
+    lines.append(
+        "> The total energy is the sum of measurements across all iterations, converted to joules (J). If you ran the `./run_experiment.sh script, this reflects the cumulative energy of all 30 iterations of the process.\n"
+    )
+
     lines.append("### Statistical Analysis\n")
 
     # ── Table (only if there are significant results) ─────
