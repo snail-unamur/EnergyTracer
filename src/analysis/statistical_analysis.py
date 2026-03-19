@@ -412,14 +412,16 @@ def generate_pr_report(
             "co2_eq" if (profiler == "carbon" and metric == "ane_mj") else metric
         )
 
+        unit = "g CO₂eq" if (profiler == "carbon" and metric == "ane_mj") else "mJ"
+
         row = [
             f"`{display_metric}`",
-            f"{mean_with:.4f} mJ",
-            f"{median_with:.4f} mJ",
-            f"{std_with:.4f} mJ",
-            f"{mean_without:.4f} mJ",
-            f"{median_without:.4f} mJ",
-            f"{std_without:.4f} mJ",
+            f"{mean_with:.4f} {unit}",
+            f"{median_with:.4f} {unit}",
+            f"{std_with:.4f} {unit}",
+            f"{mean_without:.4f} {unit}",
+            f"{median_without:.4f} {unit}",
+            f"{std_without:.4f} {unit}",
             delta_str,
             f"{p_val:.4f}",
             f"{d:+.3f}",

@@ -67,7 +67,11 @@ def process_csv_files(input_dir: Path, verbose: bool = False) -> None:
         Files that do not match the expected path structure or naming convention
         are skipped with a warning.
     """
-    all_csv_files = list(input_dir.rglob("*.csv"))
+    all_csv_files = []
+    for file in input_dir.rglob("*.csv"):
+        if ANALYSIS_DIR in file.parents or file.parent == ANALYSIS_DIR:
+            continue
+        all_csv_files.append(file)
 
     if not all_csv_files:
         log.warn(f"No CSV files found under '{input_dir}' - nothing to process.")

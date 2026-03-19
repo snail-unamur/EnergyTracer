@@ -9,8 +9,8 @@ from .abstract_energy_profiler import AbstractEnergyProfiler
 logging.getLogger("codecarbon").setLevel(logging.ERROR)
 
 # Conversion factors
-KWH_TO_MJ = 3_600_000_000  # 1 kWh = 3.6 MJ = 3.6e9 mJ
-G_TO_MG = 1_000
+KWH_TO_mJ = 3_600_000_000  # 1 kWh = 3.6 MJ = 3.6e9 mJ
+KG_TO_G = 1_000
 
 # Tracker configuration
 PROJECT_NAME = "energy_profiling"
@@ -47,7 +47,7 @@ class EnergyProfiler(AbstractEnergyProfiler):
 
         Note
         ----
-        ane_mj holds CO2 equivalent emissions in grams (g CO2eq),
+        ane_mJ holds CO2 equivalent emissions in grams (g CO2eq),
         as CodeCarbon has no Apple Neural Engine equivalent.
         """
         if not self._started:
@@ -75,10 +75,10 @@ class EnergyProfiler(AbstractEnergyProfiler):
             self._started = False
 
         data = self._tracker.final_emissions_data
-        total_cpu_mj = (data.cpu_energy or 0.0) * KWH_TO_MJ
-        total_gpu_mj = (data.gpu_energy or 0.0) * KWH_TO_MJ
-        total_ram_mj = (data.ram_energy or 0.0) * KWH_TO_MJ
-        total_co2_mg = (data.emissions or 0.0) * G_TO_MG
+        total_cpu_mJ = (data.cpu_energy or 0.0) * KWH_TO_mJ  # noqa: N806
+        total_gpu_mJ = (data.gpu_energy or 0.0) * KWH_TO_mJ  # noqa: N806
+        total_ram_mJ = (data.ram_energy or 0.0) * KWH_TO_mJ  # noqa: N806
+        total_co2_g = (data.emissions or 0.0) * KG_TO_G
 
         total_time = sum(self._durations)
         self.history = []
@@ -88,10 +88,10 @@ class EnergyProfiler(AbstractEnergyProfiler):
             self.history.append(
                 {
                     "i": i,
-                    "cpu_mj": total_cpu_mj * ratio,
-                    "gpu_mj": total_gpu_mj * ratio,
-                    "ane_mj": total_co2_mg * ratio,
-                    "dram_mj": total_ram_mj * ratio,
+                    "cpu_mJ": total_cpu_mJ * ratio,
+                    "gpu_mJ": total_gpu_mJ * ratio,
+                    "ane_mJ": total_co2_g * ratio,
+                    "dram_mJ": total_ram_mJ * ratio,
                     "time_s": dt,
                 }
             )
