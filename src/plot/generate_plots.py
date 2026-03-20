@@ -75,14 +75,6 @@ def plot_metric_comparisons(
                 x_axis="time",
             )
 
-    plot_specific_metrics(
-        df,
-        "total power",
-        dirs["time"] / "total_power_over_time.png",
-        unit="W",
-        x_axis="time",
-    )
-
 
 def plot_metric_distributions(
     df: pd.DataFrame, dirs: dict, metrics: list, ane_label: str, profiler: str

@@ -151,10 +151,10 @@ def generate_pr_report(
         n_without = len(df_without)
 
         if total_s_with > 0 and total_s_without > 0:
-            avg_s_with = total_s_with / n_with
-            avg_s_without = total_s_without / n_without
+            avg_ms_with = total_s_with / n_with * 1000
+            avg_ms_without = total_s_without / n_without * 1000
             lines.append(
-                f"| **Execution Time** | ~{avg_s_with:.3f} s | ~{avg_s_without:.3f} s |"
+                f"| **Execution Time** | {avg_ms_with:.2f} ms | {avg_ms_without:.2f} ms |"
             )
 
             avg_w_with = total_j_with / total_s_with
