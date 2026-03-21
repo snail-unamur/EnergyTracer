@@ -94,7 +94,7 @@ uv run -m src.main
 
 | Flag | Description | Default |
 |---|---|---|
-| `-h`, `--help` | Show the help message and exit | — |
+| `-h`, `--help` | Show the help message and exit | - |
 | `-p`, `--profiler` | Energy profiler to use | `carbon` |
 | `-n`, `--iter` | Number of iterations for the code under measurement | `1000` |
 | `-f1`, `--src-file-1` | Path to the source file **with** the code smell | `src/python/file_with_code_smell.py` |
@@ -207,7 +207,7 @@ To facilitate repeated measurements and comparisons, shell and batch scripts are
 |---|---|---|
 | `carbon` | `carbon` only | Any platform (cross-platform) |
 | `mac` | `mac` only (zeus_apple_silicon) | Apple Silicon machines |
-| `both` | `carbon` + `mac` | Apple Silicon — cross-profiler comparison |
+| `both` | `carbon` + `mac` | Apple Silicon - cross-profiler comparison |
 
 ```shell
 ./run_experiment.sh carbon   # Any platform: runs CodeCarbon only
@@ -215,7 +215,7 @@ To facilitate repeated measurements and comparisons, shell and batch scripts are
 ./run_experiment.sh both     # Apple Silicon: runs both profilers
 ```
 
-**`run_experiment.bat`** (Windows) runs CodeCarbon only — no argument needed:
+**`run_experiment.bat`** (Windows) runs CodeCarbon only - no argument needed:
 
 ```bat
 run_experiment.bat
@@ -268,9 +268,9 @@ The report is designed to be directly copy-pasted into a GitHub Pull Request des
 ### Sample Report Output
 
 ```
-## Energy Report — `mac-silicon` (cleaned)
+## Energy Report - `mac-silicon` (cleaned)
 
-> 29545 samples (with smell) vs 28704 samples (without smell) — α = 0.05
+> 29545 samples (with smell) vs 28704 samples (without smell) - α = 0.05
 
 | Metric | Δ mean | p-value | Cohen's d | Effect | Sig. |
 |---|---|---|---|---|---|
@@ -288,14 +288,14 @@ Removing the code smell leads to measurable energy differences:
 
 ## Experiment Guide
 
-Running reliable energy experiments requires a **controlled environment**. The full protocol — from machine preparation to statistical validation of results — is described in the dedicated [Experiment Guide](EXPERIMENT_GUIDE.md).
+Running reliable energy experiments requires a **controlled environment**. The full protocol - from machine preparation to statistical validation of results - is described in the dedicated [Experiment Guide](EXPERIMENT_GUIDE.md).
 
 Here is a quick summary of the key steps:
 
-1. **Prepare the environment** — close all non-essential apps, disconnect peripherals, plug in the charger, lock display/power settings, and ensure stable room temperature.
-2. **Run the automated script** — `./run_experiment.sh both` (Apple Silicon, both profilers), `./run_experiment.sh mac` (Apple Silicon, mac only), or `./run_experiment.sh carbon` (any platform). The script handles warm-up, 30 measurement runs with cooldowns, shuffled execution order, and automated analysis.
+1. **Prepare the environment** - close all non-essential apps, disconnect peripherals, plug in the charger, lock display/power settings, and ensure stable room temperature.
+2. **Run the automated script** - `./run_experiment.sh both` (Apple Silicon, both profilers), `./run_experiment.sh mac` (Apple Silicon, mac only), or `./run_experiment.sh carbon` (any platform). The script handles warm-up, 30 measurement runs with cooldowns, shuffled execution order, and automated analysis.
 3. **Do not interact** with the machine while the experiment is running.
-4. **Review the results** — inspect the generated reports under `results/`, the comparison plots, and CSV files.
+4. **Review the results** - inspect the generated reports under `results/`, the comparison plots, and CSV files.
 
 For a printable checklist and detailed explanations of each step, refer to the [full guide](EXPERIMENT_GUIDE.md).
 

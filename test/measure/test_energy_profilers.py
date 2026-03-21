@@ -7,8 +7,8 @@ dedicated classes at the bottom of this file.
 
 Platform / hardware guards
 --------------------------
-* **mac**    — skipped when not on macOS (darwin)
-* **carbon** — runs everywhere (software model)
+* **mac**    - skipped when not on macOS (darwin)
+* **carbon** - runs everywhere (software model)
 """
 
 import contextlib
@@ -16,11 +16,11 @@ import sys
 
 import pytest
 
-# Carbon — always available
+# Carbon - always available
 from src.measure.carbon_energy_profiler import EnergyProfiler as CarbonProfiler
 
 # ---------------------------------------------------------------------------
-# Conditional imports — each profiler is imported only on a compatible platform
+# Conditional imports - each profiler is imported only on a compatible platform
 # or mocked to avoid ImportError.
 # ---------------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ _profilers: dict[str, type] = {}
 
 _profilers["carbon"] = CarbonProfiler
 
-# Mac — only on macOS
+# Mac - only on macOS
 if sys.platform == "darwin":
     from src.measure.mac_energy_profiler import EnergyProfiler as MacProfiler
 
@@ -59,7 +59,7 @@ def profiler(profiler_cls):
 
 
 # ---------------------------------------------------------------------------
-# Common tests — run for every available profiler
+# Common tests - run for every available profiler
 # ---------------------------------------------------------------------------
 
 
@@ -118,7 +118,7 @@ class TestCommonBehaviour:
             profiler.finalize()
         except AttributeError:
             # Carbon raises AttributeError when finalize() is called
-            # without prior measure_once() — this is expected
+            # without prior measure_once() - this is expected
             if profiler_cls is CarbonProfiler:
                 pass
             else:
@@ -235,4 +235,4 @@ class TestCarbonProfiler:
         profiler = CarbonProfiler()
         profiler._durations = [0, 0, 0]
         with contextlib.suppress(AttributeError):
-            profiler.finalize()  # Expected — tracker was never started
+            profiler.finalize()  # Expected - tracker was never started

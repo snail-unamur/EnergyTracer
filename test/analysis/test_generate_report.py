@@ -48,7 +48,7 @@ class TestFmtPvalue:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# generate_pr_report — structure & content
+# generate_pr_report - structure & content
 # ──────────────────────────────────────────────────────────────────────────────
 
 

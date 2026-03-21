@@ -85,7 +85,7 @@ def test_classify_csv_files_by_group_valid_files(mocked_csv_files, tmp_path):
 
 @pytest.mark.unit
 def test_classify_csv_files_by_group_skips_invalid_path(mocked_csv_files, tmp_path):
-    # The fixture contains one file under "invalid/path/" — it must be skipped
+    # The fixture contains one file under "invalid/path/" - it must be skipped
     result = classify_csv_files_by_group(mocked_csv_files, tmp_path / "output")
 
     all_files = [f for files in result.values() for f in files]
@@ -231,7 +231,7 @@ def test_generate_statistical_reports_skips_missing_variant(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# process_csv_files (integration — sub-functions mocked)
+# process_csv_files (integration - sub-functions mocked)
 # ---------------------------------------------------------------------------
 
 

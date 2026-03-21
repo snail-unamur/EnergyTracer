@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 REM ─────────────────────────────────────────────────────────
-REM EnergyTracer — Experiment Runner (Windows)
+REM EnergyTracer - Experiment Runner (Windows)
 REM ─────────────────────────────────────────────────────────
 
 REM === ANSI color codes (Windows 10+ Terminal) ===

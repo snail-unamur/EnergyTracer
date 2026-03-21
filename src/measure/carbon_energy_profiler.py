@@ -59,7 +59,7 @@ class EnergyProfiler(AbstractEnergyProfiler):
         t1 = time.perf_counter()
 
         self._durations.append(t1 - t0)
-        return {}  # placeholder — real values filled by finalize()
+        return {}  # placeholder - real values filled by finalize()
 
     def finalize(self):
         """

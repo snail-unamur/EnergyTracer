@@ -119,14 +119,14 @@ def compare_histories(
         versions, allowing for a visual comparison of their energy profiles.
     """
     if not history1 and not history2:
-        log.warn("Both histories are empty — skipping all plots.")
+        log.warn("Both histories are empty - skipping all plots.")
         return
 
     ane_label = "ANE" if profiler == "mac" else "CO2"
     df = prepare_dataframe(history1, history2, ane_label)
 
     if df.empty:
-        log.warn("Prepared DataFrame is empty — skipping all plots.")
+        log.warn("Prepared DataFrame is empty - skipping all plots.")
         return
 
     output_dir = Path(directory) / PLOTS_SUBDIR

@@ -83,7 +83,7 @@ def shapiro_wilk_test(values: list[float]) -> tuple[float, float, bool]:
 
     arr = np.array(values, dtype=float)
     if np.ptp(arr) == 0:
-        # All values identical — trivially normal, skip scipy to avoid warning
+        # All values identical - trivially normal, skip scipy to avoid warning
         return (1.0, 1.0, True)
 
     # Shapiro-Wilk is unreliable for N > 5000; subsample deterministically
@@ -117,7 +117,7 @@ def welch_ttest(
     a = np.array(sample_a, dtype=float)
     b = np.array(sample_b, dtype=float)
     if np.ptp(a) == 0 or np.ptp(b) == 0:
-        # At least one sample has zero variance — t-test is undefined
+        # At least one sample has zero variance - t-test is undefined
         is_different = bool(np.mean(a) != np.mean(b))
         return (0.0, 1.0 if not is_different else 0.0, is_different)
 

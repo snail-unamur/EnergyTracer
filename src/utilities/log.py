@@ -1,12 +1,12 @@
 """
 Logging helpers that mirror the ANSI visual identity of the shell scripts.
 
-  ℹ  info   — cyan
-  ✔  ok     — green
-  ⚠  warn   — yellow
-  ✖  error  — red
-     dim    — dimmed
-     header — bold section title with a dim separator
+  ℹ  info   - cyan
+  ✔  ok     - green
+  ⚠  warn   - yellow
+  ✖  error  - red
+     dim    - dimmed
+     header - bold section title with a dim separator
 """
 
 RST = "\033[0m"

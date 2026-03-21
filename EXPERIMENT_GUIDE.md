@@ -6,13 +6,13 @@ Energy measurements are inherently **noisy**. Background processes, thermal thro
 
 ---
 
-## TL;DR — Quick Checklist
+## TL;DR - Quick Checklist
 
 Before launching the experiment, go through this checklist:
 
 - [ ] Close **all** non-essential applications (including background apps and menu-bar utilities)
 - [ ] Disconnect unnecessary peripherals (external drives, printers, etc.)
-- [ ] Prefer a **wired** network connection — or disconnect the network entirely
+- [ ] Prefer a **wired** network connection - or disconnect the network entirely
 - [ ] Lock display settings: brightness, volume, power-saving mode, screensaver off, sleep mode off
 - [ ] **Plug in the power adapter** to avoid battery-level fluctuations
 - [ ] Ensure a **stable ambient temperature** (avoid direct sunlight, heaters, etc.)
@@ -53,16 +53,16 @@ A controlled environment is the foundation of meaningful energy measurements. Ea
 
 Lock all settings that could shift mid-experiment:
 
-- **Screen brightness** — set to a fixed level (or minimum)
-- **Volume** — mute or set to a fixed level
-- **Power-saving / performance mode** — choose one and keep it
-- **Screensaver & sleep** — disable both entirely
-- **Notifications** — enable Do Not Disturb
+- **Screen brightness** - set to a fixed level (or minimum)
+- **Volume** - mute or set to a fixed level
+- **Power-saving / performance mode** - choose one and keep it
+- **Screensaver & sleep** - disable both entirely
+- **Notifications** - enable Do Not Disturb
 
 ### 1.3 Stabilize the Physical Environment
 
 - Work in a room with **stable temperature** (thermal throttling alters CPU frequency and thus energy draw)
-- **Plug in the power adapter** — battery discharge curves introduce non-linear noise, and the experiment can be long enough to drain your battery
+- **Plug in the power adapter** - battery discharge curves introduce non-linear noise, and the experiment can be long enough to drain your battery
 - Avoid moving or touching the machine during the run
 
 ---
@@ -111,26 +111,26 @@ uv run ET-analyzer -v
 
 ### 3.1 Generated Outputs
 
-- **CSV files** — raw per-iteration energy data for each profiler and code variant, ready for custom statistical analysis
-- **Merged CSV files** — all runs concatenated per (profiler, data type, variant), saved under `results/`
-- **Comparison plots** — per-component (CPU, GPU, ANE/gCO₂, DRAM) and overall energy comparison charts
-- **Box plots** — distribution visualizations to inspect variance and outliers
-- **Markdown reports** — a PR-ready statistical report per profiler / data type, including Welch's t-test, Cohen's d effect sizes, and a verdict section (saved as `results/<data_type>/<profiler>/<profiler>_report.md`)
+- **CSV files** - raw per-iteration energy data for each profiler and code variant, ready for custom statistical analysis
+- **Merged CSV files** - all runs concatenated per (profiler, data type, variant), saved under `results/`
+- **Comparison plots** - per-component (CPU, GPU, ANE/gCO₂, DRAM) and overall energy comparison charts
+- **Box plots** - distribution visualizations to inspect variance and outliers
+- **Markdown reports** - a PR-ready statistical report per profiler / data type, including Welch's t-test, Cohen's d effect sizes, and a verdict section (saved as `results/<data_type>/<profiler>/<profiler>_report.md`)
 
 ### 3.2 What to Look For
 
-1. **Magnitude of difference** — Is the energy gap between variants consistent across runs?
-2. **Variance** — Large variance (wide box plots) suggests unstable measurements; consider increasing the number of runs or tightening the controlled environment.
-3. **Outliers** — Occasional spikes may indicate garbage collection, OS interrupts, or thermal events. A few outliers in 30 runs are normal; many are a red flag.
-4. **Component breakdown** — Check which hardware component (CPU, DRAM, GPU, ANE) drives the difference. This reveals *where* the code smell wastes energy.
+1. **Magnitude of difference** - Is the energy gap between variants consistent across runs?
+2. **Variance** - Large variance (wide box plots) suggests unstable measurements; consider increasing the number of runs or tightening the controlled environment.
+3. **Outliers** - Occasional spikes may indicate garbage collection, OS interrupts, or thermal events. A few outliers in 30 runs are normal; many are a red flag.
+4. **Component breakdown** - Check which hardware component (CPU, DRAM, GPU, ANE) drives the difference. This reveals *where* the code smell wastes energy.
 
 ### 3.3 Statistical Validation
 
 For rigorous analysis beyond visual inspection, consider:
 
-- **Mann–Whitney U test** — non-parametric test to determine if two distributions differ significantly (recommended for energy data, which is rarely normally distributed)
-- **Effect size (Cliff's delta)** — quantifies how large the difference is, beyond mere statistical significance
-- **Confidence intervals** — report medians with 95 % confidence intervals rather than means, to limit the influence of outliers
+- **Mann–Whitney U test** - non-parametric test to determine if two distributions differ significantly (recommended for energy data, which is rarely normally distributed)
+- **Effect size (Cliff's delta)** - quantifies how large the difference is, beyond mere statistical significance
+- **Confidence intervals** - report medians with 95 % confidence intervals rather than means, to limit the influence of outliers
 
 ---
 

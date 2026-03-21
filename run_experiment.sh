@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # ─────────────────────────────────────────────────────────
-# EnergyTracer — Experiment Runner
+# EnergyTracer - Experiment Runner
 # ─────────────────────────────────────────────────────────
 
 # ── ANSI colors ──────────────────────────────────────────
@@ -112,7 +112,7 @@ OUTPUT_DIR="output"
 
 # ── SSH detection & setup ─────────────────────────────────
 # $SSH_CLIENT / $SSH_TTY / $SSH_CONNECTION are set by sshd and
-# inherited by tmux child processes — they survive detach/reattach.
+# inherited by tmux child processes - they survive detach/reattach.
 # When detected, we source lib/ssh_setup.sh which handles:
 #   - sudo persistence (NOPASSWD sudoers rule for powermetrics)
 #   - caffeinate (prevents both idle sleep and background CPU throttling)
@@ -182,7 +182,7 @@ end_phase() {
 GLOBAL_START=$(date +%s)
 
 echo ""
-printf "  ${BOLD}${GREEN}⚡ EnergyTracer${RST} ${DIM}— Experiment Runner${RST}\n"
+printf "  ${BOLD}${GREEN}⚡ EnergyTracer${RST} ${DIM}- Experiment Runner${RST}\n"
 printf "  ${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}\n"
 echo ""
 printf "  ${BOLD}Machine${RST}      ${GREEN}%s${RST}\n" "$MACHINE"
@@ -192,7 +192,7 @@ printf "  ${BOLD}Warm-up${RST}      %d runs × %d profiler(s) ${DIM}(n=%d)${RST}
 printf "  ${BOLD}Measurement${RST}  %d runs × %d profiler(s) ${DIM}(n=%d)${RST}\n" "$MEASURE_RUNS" "$NUM_PROFILERS" "$MEASURE_N"
 printf "  ${BOLD}Cooldown${RST}     %ds between measurements\n" "$COOLDOWN"
 echo ""
-warn "Do not interrupt — results may be incomplete."
+warn "Do not interrupt - results may be incomplete."
 if [ "$IS_SSH" = "1" ]; then
     info "SSH mode: caffeinate active (PID ${CAFFEINATE_PID}), sudo NOPASSWD in place."
 fi

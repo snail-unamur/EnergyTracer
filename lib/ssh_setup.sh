@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────
-# lib/ssh_setup.sh — SSH-specific setup for EnergyTracer on
+# lib/ssh_setup.sh - SSH-specific setup for EnergyTracer on
 #  macOS
 #
 # Sourced (not executed) by run_experiment.sh when an SSH
@@ -9,7 +9,7 @@
 
 # ── Why this file exists ──────────────────────────────────
 #
-# tmux keeps the process alive when you disconnect — that is its job
+# tmux keeps the process alive when you disconnect - that is its job
 # and it works correctly. The problems addressed here are different,
 # and operate at the macOS kernel level:
 #
