@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from .utils.get_hardware_details import get_hardware_details
+
 if TYPE_CHECKING:
     import pandas as pd
 
@@ -36,6 +38,7 @@ def generate_pr_report(
     df_without: pd.DataFrame,
     profiler: str,
     data_type: str,
+    verbose: bool = False,
 ) -> str:
     """
     Generate a concise Markdown report suitable for a GitHub PR description.
@@ -50,6 +53,7 @@ def generate_pr_report(
         df_without: DataFrame of measurements *without* the code smell.
         profiler: Profiler name (e.g. "mac-silicon", "carbon").
         data_type: "cleaned" or "raw".
+        verbose: Whether to log additional details.
 
     Returns
     -------
@@ -113,6 +117,12 @@ def generate_pr_report(
         f"\u03b1\u2009=\u2009{ALPHA}\n"
     )
 
+    # ── Instance info ─────────────────────────────────────
+    lines.append("### Instance Info\n")
+    for key, value in get_hardware_details().items():
+        lines.append(f"* **{key}**: `{value}`")
+    lines.append("")
+
     # ── Totals ──────────────────────────────────────────────
     energy_cols = ["cpu_mj", "gpu_mj", "dram_mj"]
     if profiler == "mac":
@@ -167,10 +177,8 @@ def generate_pr_report(
             f"| **Total Energy** | {total_j_with:.2f} J | {total_j_without:.2f} J |"
         )
 
-        lines.append("\n")
-
     lines.append(
-        "> The total energy is the sum of measurements across all iterations, converted to joules (J). If you ran the `./run_experiment.sh script, this reflects the cumulative energy of all 30 iterations of the process.\n"
+        "\n> The total energy is the sum of measurements across all iterations, converted to joules (J). If you ran the `./run_experiment.sh` script, this reflects the cumulative energy of all 30 iterations of the process.\n"
     )
 
     lines.append("### Statistical Analysis\n")

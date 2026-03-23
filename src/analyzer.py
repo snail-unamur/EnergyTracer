@@ -253,7 +253,7 @@ def generate_statistical_reports(
             continue
 
         report_content = generate_pr_report(
-            df_with_smell, df_without_smell, profiler, data_type
+            df_with_smell, df_without_smell, profiler, data_type, verbose
         )
         report_file = ANALYSIS_DIR / data_type / profiler / f"{profiler}_report.md"
         report_file.write_text(report_content)
