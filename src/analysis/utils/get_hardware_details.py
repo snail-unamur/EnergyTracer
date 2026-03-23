@@ -73,29 +73,59 @@ def get_hardware_details() -> dict[str, str]:
                 warn("system_profiler failed - chip detection skipped")
 
     elif system == "Linux":
+        # 1. Board / model detection
+        #    Priority: device-tree (Raspberry Pi, most ARM SBCs) > DMI sysfs (x86 / cloud VMs)
         for path in (
+            "/proc/device-tree/model",
             "/sys/devices/virtual/dmi/id/product_name",
             "/sys/devices/virtual/dmi/id/board_name",
         ):
             try:
-                with Path.open(path) as fh:
-                    value = fh.read().strip()
+                value = Path(path).read_text(encoding="utf-8").rstrip("\x00").strip()
                 if value and value not in ("", "To be filled by O.E.M."):
                     model = value
                     break
             except OSError:
                 pass
         else:
-            warn("DMI sysfs unavailable - hardware model detection skipped")
+            warn(
+                "Neither device-tree nor DMI sysfs available - hardware model detection skipped"
+            )
 
+        # 2. Chip / CPU detection — ordered from most to least reliable:
+        #   a) /proc/device-tree/compatible  — 64-bit ARM (Pi 3/4/5, Jetson, …)
+        #      Format: null-separated list, last token is the SoC (e.g. "brcm,bcm2837")
+        #   b) /proc/cpuinfo "model name"    — x86 / x86_64
+        #   c) /proc/cpuinfo "Hardware"      — older 32-bit ARM kernels
         try:
-            with Path.open("/proc/cpuinfo") as fh:
-                for line in fh:
-                    if line.startswith("Model name") or line.startswith("model name"):
-                        chip = line.split(":", 1)[1].strip()
-                        break
+            raw = Path("/proc/device-tree/compatible").read_bytes()
+            tokens = [
+                t.decode("utf-8", errors="replace").strip()
+                for t in raw.split(b"\0")
+                if t.strip()
+            ]
+            if tokens:
+                chip = tokens[-1]  # last entry is the SoC
         except OSError:
-            warn("/proc/cpuinfo unavailable - chip detection skipped")
+            pass
+
+        if not chip:
+            try:
+                cpuinfo = Path("/proc/cpuinfo").read_text(encoding="utf-8")
+                for field in ("model name", "Model name", "Hardware"):
+                    for line in cpuinfo.splitlines():
+                        if line.startswith(field):
+                            chip = line.split(":", 1)[1].strip()
+                            break
+                    if chip:
+                        break
+            except OSError:
+                pass
+
+        if not chip:
+            warn(
+                "chip detection skipped - no recognised source found (device-tree, cpuinfo)"
+            )
 
     elif system == "Windows":
         try:
