@@ -14,7 +14,7 @@ name = "energytracer"
 version = "0.1.0"
 description = "A tool to measure and compare the energy consumption of Python code variants, with a focus on identifying the impact of code smells."
 readme = "README.md"
-license = { text = "CC BY-NC-SA 4.0" }
+license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
     "alive-progress>=3.3.0",

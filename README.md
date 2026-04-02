@@ -4,7 +4,7 @@
 
 
 [![CI](https://github.com/fstormacq/EnergyTracer/actions/workflows/main.yaml/badge.svg)](https://github.com/fstormacq/EnergyTracer/actions/workflows/main.yaml)
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)]()
 [![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python)](https://python.org)
 [![uv](https://img.shields.io/badge/managed%20with-uv-purple)](https://github.com/astral-sh/uv)
@@ -337,6 +337,6 @@ This project was developed as part of a Master's degree in Computer Science at t
 
 ## License
 
-This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+This project is licensed under the [MIT License](LICENSE).
 
-© 2026 Florian Stormacq. You are free to use, share, and adapt this work for non-commercial purposes, as long as you give appropriate credit and distribute your contributions under the same license.
+© 2026 Florian Stormacq. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of this software under the terms of the MIT License.
