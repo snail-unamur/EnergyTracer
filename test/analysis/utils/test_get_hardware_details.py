@@ -594,6 +594,48 @@ class TestDetectWindows:
         assert model == "AMD64"
         assert chip is None
 
+    def test_uses_powershell_when_wmic_missing(self):
+        def which_side_effect(binary: str) -> str | None:
+            if binary == "wmic":
+                return None
+            if binary == "powershell":
+                return "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+            return None
+
+        with (
+            patch("shutil.which", side_effect=which_side_effect),
+            patch(
+                "subprocess.check_output", return_value="Hyper-V Virtual Machine\r\n"
+            ),
+        ):
+            model, chip = _detect_windows()
+        assert model == "Hyper-V Virtual Machine"
+        assert chip is None
+
+    def test_uses_powershell_when_wmic_fails(self):
+        def which_side_effect(binary: str) -> str | None:
+            if binary == "wmic":
+                return "C:\\Windows\\System32\\wbem\\wmic.exe"
+            if binary == "powershell":
+                return "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+            return None
+
+        calls = [OSError("wmic failed"), "VMware Virtual Platform\r\n"]
+
+        def check_output_side_effect(*args, **kwargs):
+            value = calls.pop(0)
+            if isinstance(value, Exception):
+                raise value
+            return value
+
+        with (
+            patch("shutil.which", side_effect=which_side_effect),
+            patch("subprocess.check_output", side_effect=check_output_side_effect),
+        ):
+            model, chip = _detect_windows()
+        assert model == "VMware Virtual Platform"
+        assert chip is None
+
 
 # ── get_hardware_details (public API) ─────────────────────────────────────────
 

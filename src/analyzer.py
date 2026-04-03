@@ -256,7 +256,8 @@ def generate_statistical_reports(
             df_with_smell, df_without_smell, profiler, data_type, verbose
         )
         report_file = ANALYSIS_DIR / data_type / profiler / f"{profiler}_report.md"
-        report_file.write_text(report_content)
+        # Force UTF-8 to avoid Windows default code page (e.g. cp1252) crashes.
+        report_file.write_text(report_content, encoding="utf-8")
         if verbose:
             log.ok(f"Report saved → {report_file}")
 

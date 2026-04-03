@@ -199,25 +199,48 @@ def _detect_linux() -> tuple[str, str | None]:
 
 
 def _detect_windows() -> tuple[str, str | None]:
-    """Return (model, chip) for Windows via wmic."""
+    """Return (model, chip) for Windows via wmic or PowerShell CIM fallback."""
     wmic_path = shutil.which("wmic")
-    if not wmic_path:
-        warn("wmic not found - hardware model detection skipped")
-        return platform.machine(), None
-    try:
-        model = (
-            subprocess.check_output(  # noqa: S603
-                [wmic_path, "csproduct", "get", "name", "/value"],
+    if wmic_path:
+        try:
+            model = (
+                subprocess.check_output(  # noqa: S603
+                    [wmic_path, "csproduct", "get", "name", "/value"],
+                    text=True,
+                    stderr=subprocess.DEVNULL,
+                )
+                .strip()
+                .split("=", 1)[-1]
+                .strip()
+            )
+            if model:
+                return model, None  # wmic doesn't expose chip info easily
+        except Exception:
+            warn("wmic failed - falling back to PowerShell CIM")
+    else:
+        warn("wmic not found - falling back to PowerShell CIM")
+
+    powershell_path = shutil.which("powershell") or shutil.which("powershell.exe")
+    if powershell_path:
+        try:
+            model = subprocess.check_output(  # noqa: S603
+                [
+                    powershell_path,
+                    "-NoProfile",
+                    "-Command",
+                    "(Get-CimInstance Win32_ComputerSystem).Model",
+                ],
                 text=True,
                 stderr=subprocess.DEVNULL,
-            )
-            .strip()
-            .split("=", 1)[-1]
-        )
-        return model, None  # wmic doesn't expose chip info easily
-    except Exception:
-        warn("wmic failed - hardware model detection skipped")
-        return platform.machine(), None
+            ).strip()
+            if model:
+                return model, None
+        except Exception:
+            warn("PowerShell CIM query failed - hardware model detection skipped")
+    else:
+        warn("PowerShell not found - hardware model detection skipped")
+
+    return platform.machine(), None
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -230,7 +253,7 @@ def get_hardware_details() -> dict[str, str]:
     - macOS  : sysctl (hw.model + brand_string) -> system_profiler fallback.
     - Linux  : device-tree > DMI sysfs > cpuinfo > lscpu - covers ARM SBCs,
                x86 bare-metal, cloud VMs, and ARM servers (Graviton, Ampere).
-    - Windows: wmic csproduct.
+    - Windows: wmic csproduct, PowerShell CIM fallback.
     Falls back to platform.machine() when nothing else is available.
 
     Authors: Florian Stormacq, with the help of Claude Sonnet 4.6
