@@ -17,12 +17,14 @@
 - [Installation](#installation)
 - [Usage](#usage)
   - [Command-Line Options](#command-line-options)
+  - [Supported Languages](#supported-languages)
   - [Outputs](#outputs)
 - [Sample Results](#sample-results)
   - [Overall Energy Comparison](#overall-energy-comparison)
   - [Per-Component Comparisons](#per-component-comparisons)
   - [Box Plots \& Violin Plots](#box-plots--violin-plots)
 - [Profilers](#profilers)
+  - [Measurement Methodology \& Limitations](#measurement-methodology--limitations)
   - [Mac Silicon (Zeus)](#mac-silicon-zeus)
   - [CodeCarbon](#codecarbon)
 - [Analyzer (ET-analyzer)](#analyzer-et-analyzer)
@@ -37,6 +39,8 @@
 ## Description
 
 Have you ever wondered how much energy your code consumes? How to optimize it for better energy efficiency? Or how it impacts the environment? EnergyTracer is here to help you answer these questions, and more! This tool allows you to measure the energy consumption of your code, compare different implementations, and even estimate the CO₂ emissions associated with running your code. It provides comprehensive insights into code energy efficiency.
+
+EnergyTracer supports multiple source languages through an extensible runner architecture. Language detection is automatic from file extension, and the same measurement pipeline can profile both interpreted and compiled code.
 
 
 ## Quick Start
@@ -109,6 +113,25 @@ uv run -m src.main
 | `--shuffle` | Randomize execution order of code variants to mitigate temporal effects | off |
 | `-v`, `--verbose` | Enable verbose output during profiling | off |
 
+### Supported Languages
+
+EnergyTracer automatically detects the language of `--src-file-1` and `--src-file-2` from file extension and selects the matching runner implementation. The two input files must use the same language for a single measurement run.
+
+Currently supported languages:
+
+- **Python** (`.py`)
+- **Java** (`.java`)
+
+Under the hood, each language runner follows the same lifecycle:
+
+1. **`prepare`**: one-time setup before the measurement loop
+2. **`run_prepared`**: one execution per measured iteration
+3. **`cleanup`**: resource teardown after the loop
+
+This design avoids redundant setup work and improves fairness across iterations. For compiled languages, compilation happens once in `prepare`, then the compiled artifact is executed `N` times in `run_prepared`.
+
+To add a new language, implement the `CodeRunner` interface (`prepare` / `run_prepared` / `cleanup`) and register the file extension in `src/runners/detect.py`.
+
 Example:
 
 ```shell
@@ -171,6 +194,20 @@ EnergyTracer supports various profilers to collect energy metrics. Here is a sum
 |---|---|---|---|:---:|---|
 | `mac` | `zeus_apple_silicon` | Reads Apple Silicon **hardware power counters** directly (IOKit) | **Apple M-series only** | ⭐⭐⭐ | Accurate absolute energy measurement on M-series Macs; fine-grained profiling of code blocks |
 | `carbon` | `codecarbon` | **Software model**: estimates power from CPU TDP, utilization, and time | **Cross-platform** | ⭐⭐ | CO₂ emission reports; long-running workloads; multi-platform projects or mixed hardware |
+
+### Measurement Methodology & Limitations
+
+EnergyTracer compares two source variants by repeating the same execution path across many iterations. The runner lifecycle (`prepare` once, `run_prepared` many times) reduces measurement noise caused by repeated setup.
+
+That said, absolute values are still influenced by language runtime behavior:
+
+- **Python**: code runs in-process via `exec`, with no subprocess startup overhead per iteration.
+- **Java**: each iteration launches a JVM process, which introduces startup overhead (commonly around ~100-400 ms depending on machine and environment).
+- **Other compiled languages (e.g., Rust, Go)**: once supported, they will also execute via external process launches, typically with lower startup overhead than a full JVM.
+
+As a consequence, **cross-language absolute comparisons can be biased by runtime startup costs**.
+
+However, **same-language comparisons remain valid** (e.g., Java smell vs Java no-smell, Python smell vs Python no-smell), because runtime startup overhead is effectively constant within a language pair and cancels out in relative differences.
 
 > **Note on measurement differences:** The different profilers will report different values for the exact same workload. This is expected because they use fundamentally different measurement methods.
 >

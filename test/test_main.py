@@ -140,9 +140,11 @@ def test_run_profiling_with_keyboard_interrupt(
     runner.prepare.assert_called_once()
     assert mock_profiler.measure_once.call_count == 1 if n_iter < 2 else 2
     assert runner.run_prepared.call_count == 1 if n_iter < 2 else 2
-    mock_profiler.finalize.assert_called_once()
     runner.cleanup.assert_called_once()
-    assert history == mock_profiler.history
+    if n_iter < 2:
+        assert history == mock_profiler.history
+    else:
+        assert history is None
 
 
 @pytest.mark.unit
@@ -163,7 +165,8 @@ def test_cli_with_profilers_on_darwin(mock_parse, monkeypatch, profiler):
         ),
         patch("src.main.main") as mock_main,
     ):
-        cli()
+        mock_main.return_value = 0
+        assert cli() == 0
 
     mock_main.assert_called_once()
     _, energy_profiler_cls = mock_main.call_args.args
@@ -176,11 +179,7 @@ def test_cli_with_profilers_on_darwin(mock_parse, monkeypatch, profiler):
 def test_cli_with_mac_profiler_on_non_darwin(mock_parse, monkeypatch, platform):
     mock_parse.return_value = MagicMock(profiler="mac")
     monkeypatch.setattr("sys.platform", platform)
-
-    with pytest.raises(SystemExit) as exc_info:
-        cli()
-
-    assert exc_info.value.code == 1
+    assert cli() == 1
 
 
 @pytest.mark.unit
@@ -191,7 +190,8 @@ def test_cli_with_carbon_profiler_on_non_darwin(mock_parse, monkeypatch, platfor
     monkeypatch.setattr("sys.platform", platform)
 
     with patch("src.main.main") as mock_main:
-        cli()
+        mock_main.return_value = 0
+        assert cli() == 0
 
     mock_main.assert_called_once()
     _, energy_profiler_cls = mock_main.call_args.args
@@ -240,7 +240,7 @@ def test_main_with_valid_arguments(
         output_dir="test_output",
     )
 
-    main(mock_args, mock_cls)
+    assert main(mock_args, mock_cls) == 0
 
     assert mock_profiler.measure_once.call_count == 4
     assert mock_profiler.finalize.call_count == 2

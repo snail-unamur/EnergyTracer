@@ -38,10 +38,10 @@ def run_profiling(energy_profiler_cls, src_file, label, n_iter, runner, verbose=
     if verbose:
         log.header(f"Running {runner.language} code")
 
-    code = Path(src_file).read_text()
-    monitor = energy_profiler_cls(verbose=verbose)
-
+    monitor = None
     try:
+        code = Path(src_file).read_text()
+        monitor = energy_profiler_cls(verbose=verbose)
         runner.prepare(code)
         with alive_bar(n_iter, disable=not verbose) as bar:
             for i in range(n_iter):
@@ -49,12 +49,23 @@ def run_profiling(energy_profiler_cls, src_file, label, n_iter, runner, verbose=
                 bar()
         print()
     except KeyboardInterrupt:
-        if verbose:
-            log.warn(f'Energy profiling interrupted for "{label}" code by user.')
+        log.warn(f'Energy profiling interrupted for "{label}" code by user.')
+        return None
+    except Exception as exc:
+        log.error(f'Failed while profiling "{label}" code: {exc}')
+        return None
     finally:
-        runner.cleanup()
+        try:
+            runner.cleanup()
+        except Exception as exc:
+            log.warn(f"Runner cleanup failed: {exc}")
 
-    monitor.finalize()
+    try:
+        monitor.finalize()
+    except Exception as exc:
+        log.error(f"Failed to finalize profiler for {label}: {exc}")
+        return None
+
     return monitor.history
 
 
@@ -88,6 +99,8 @@ def collect_measurements(args, energy_profiler_cls, runner):
         runner=runner,
         verbose=args.verbose,
     )
+    if first_result is None:
+        return None
 
     second_result = run_profiling(
         energy_profiler_cls,
@@ -97,6 +110,8 @@ def collect_measurements(args, energy_profiler_cls, runner):
         runner=runner,
         verbose=args.verbose,
     )
+    if second_result is None:
+        return None
 
     if args.verbose:
         log.ok("Energy profiling completed.")
@@ -143,15 +158,19 @@ def save_cleaned(
 
 
 def main(args, energy_profiler_cls):
-    runner = runner_for(args.src_file_1)
-    language_2 = get_language_for(args.src_file_2)
+    try:
+        runner = runner_for(args.src_file_1)
+        language_2 = get_language_for(args.src_file_2)
+    except ValueError as exc:
+        log.error(str(exc))
+        return 1
 
     if runner.language != language_2:
         log.error(
             f"Source file languages do not match: {args.src_file_1} is {runner.language}, "
             f"but {args.src_file_2} is {language_2}. Please provide source files in the same language."
         )
-        sys.exit(1)
+        return 1
 
     if args.verbose:
         log.header("EnergyTracer Configuration")
@@ -164,54 +183,74 @@ def main(args, energy_profiler_cls):
     history_with_smell, history_without_smell = collect_measurements(
         args, energy_profiler_cls, runner
     )
+    if history_with_smell is None or history_without_smell is None:
+        log.error("Measurement failed before completion.")
+        return 1
 
     if not history_with_smell and not history_without_smell:
         log.warn("Both profiling runs returned empty histories - nothing to save.")
-        return
+        return 0
 
     output_directory = Path("output") / args.profiler / args.output_dir
 
-    save_raw(
-        history_with_smell,
-        history_without_smell,
-        profiler=args.profiler,
-        directory=output_directory / "raw",
-    )
+    try:
+        save_raw(
+            history_with_smell,
+            history_without_smell,
+            profiler=args.profiler,
+            directory=output_directory / "raw",
+        )
+    except Exception as exc:
+        log.error(f"Failed to save raw outputs: {exc}")
+        return 1
 
     if args.verbose:
         log.info("Raw data saved. Running statistical analysis\u2026")
 
-    save_cleaned(
-        history_with_smell,
-        history_without_smell,
-        profiler=args.profiler,
-        directory=output_directory / "cleaned",
-        verbose=args.verbose,
-    )
+    try:
+        save_cleaned(
+            history_with_smell,
+            history_without_smell,
+            profiler=args.profiler,
+            directory=output_directory / "cleaned",
+            verbose=args.verbose,
+        )
+    except Exception as exc:
+        log.error(f"Failed during statistical analysis: {exc}")
+        return 1
 
     if args.verbose:
         log.ok("Cleaned data and plots saved.")
         print()
 
+    return 0
+
 
 def cli():
-    args = parse_arguments()
+    try:
+        args = parse_arguments()
 
-    if args.profiler == "mac":
-        if sys.platform != "darwin":
-            log.error(
-                "The 'mac' profiler (zeus_apple_silicon) is only available on macOS with Apple Silicon."
-            )
-            log.dim("Please use the 'carbon' profiler on this platform: uv run ET")
-            sys.exit(1)
-        from .measure.mac_energy_profiler import EnergyProfiler as macEnergyProfiler
+        if args.profiler == "mac":
+            if sys.platform != "darwin":
+                log.error(
+                    "The 'mac' profiler (zeus_apple_silicon) is only available on macOS with Apple Silicon."
+                )
+                log.dim("Please use the 'carbon' profiler on this platform: uv run ET")
+                return 1
+            from .measure.mac_energy_profiler import EnergyProfiler as macEnergyProfiler
 
-        energy_profiler_cls = macEnergyProfiler
-    else:
-        energy_profiler_cls = carbonEnergyProfiler
+            energy_profiler_cls = macEnergyProfiler
+        else:
+            energy_profiler_cls = carbonEnergyProfiler
 
-    main(args, energy_profiler_cls)
+        return main(args, energy_profiler_cls)
+    except KeyboardInterrupt:
+        log.warn("Execution interrupted by user (Ctrl+C).")
+        return 0
+    except Exception as exc:
+        log.error(f"Unexpected error: {exc}")
+        return 1
 
 
 if __name__ == "__main__":
-    cli()
+    sys.exit(cli())

@@ -12,11 +12,6 @@ EXTENSION_MAP = {
     ".java": JavaRunner,
 }
 
-LANGUAGE_MAP = {
-    ".py": "python",
-    ".java": "java",
-}
-
 
 def runner_for(src_file: str) -> CodeRunner:
     ext = Path(src_file).suffix.lower()
@@ -28,9 +23,4 @@ def runner_for(src_file: str) -> CodeRunner:
 
 
 def get_language_for(src_file: str) -> str:
-    ext = Path(src_file).suffix.lower()
-    language = LANGUAGE_MAP.get(ext)
-    if language is None:
-        supported = ", ".join(LANGUAGE_MAP)
-        raise ValueError(f"Unsupported file extension '{ext}'. Supported: {supported}")
-    return language
+    return runner_for(src_file).language

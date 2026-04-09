@@ -1,5 +1,6 @@
 from collections import defaultdict
 from pathlib import Path
+import sys
 
 from alive_progress import alive_bar
 import pandas as pd
@@ -23,7 +24,7 @@ def main(args):
             - verbose (bool): whether to display progress and debug information.
 
     Output:
-        None.
+        int: process return code (0 on success, 1 on failure).
 
     Note:
         triggers the full analysis pipeline, which creates the results directory on first write.
@@ -38,11 +39,20 @@ def main(args):
 
     ANALYSIS_DIR = Path(args.path) / _DEFAULT_ANALYSIS_DIR
 
-    process_csv_files(Path(args.path), verbose=args.verbose)
+    try:
+        process_csv_files(Path(args.path), verbose=args.verbose)
+    except KeyboardInterrupt:
+        log.warn("Analysis interrupted by user (Ctrl+C).")
+        return 0
+    except Exception as exc:
+        log.error(f"Analysis failed: {exc}")
+        return 1
 
     if args.verbose:
         log.ok("Analysis complete.")
         print()
+
+    return 0
 
 
 def process_csv_files(input_dir: Path, verbose: bool = False) -> None:
@@ -270,17 +280,23 @@ def cli():
         None. Reads arguments from sys.argv via parse_arguments().
 
     Output:
-        None. Exits early with an error log if the specified input directory
-        does not exist; otherwise delegates to main().
+        int: process return code (0 on success, 1 on failure).
     """
-    args = parse_arguments(origin="analyzer")
+    try:
+        args = parse_arguments(origin="analyzer")
 
-    if not Path(args.path).exists():
-        log.error(f"Directory '{args.path}' does not exist.")
-        return
+        if not Path(args.path).exists():
+            log.error(f"Directory '{args.path}' does not exist.")
+            return 1
 
-    main(args)
+        return main(args)
+    except KeyboardInterrupt:
+        log.warn("Analysis interrupted by user (Ctrl+C).")
+        return 0
+    except Exception as exc:
+        log.error(f"Unexpected analyzer error: {exc}")
+        return 1
 
 
 if __name__ == "__main__":
-    cli()
+    sys.exit(cli())

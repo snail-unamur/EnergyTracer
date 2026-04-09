@@ -27,12 +27,15 @@ def test_analyzer_cli_with_args(path, verbose):
         patch("src.analyzer.main") as mock_main,
     ):
         mock_parse.return_value = MagicMock(path=path, verbose=verbose)
-        cli()
+        mock_main.return_value = 0
+        result = cli()
 
     if not Path(path).exists():
         mock_main.assert_not_called()
+        assert result == 1
     else:
         mock_main.assert_called_once()
+        assert result == 0
 
 
 # ---------------------------------------------------------------------------
@@ -46,9 +49,36 @@ def test_analyzer_cli_with_args(path, verbose):
 def test_analyzer_main_with_args(path, verbose):
     with patch("src.analyzer.process_csv_files") as mock_process:
         args = MagicMock(path=path, verbose=verbose)
-        main(args)
+        result = main(args)
 
     mock_process.assert_called_once_with(Path(path), verbose=verbose)
+    assert result == 0
+
+
+@pytest.mark.unit
+def test_analyzer_main_keyboard_interrupt_returns_zero():
+    args = MagicMock(path="output", verbose=False)
+    with patch("src.analyzer.process_csv_files", side_effect=KeyboardInterrupt):
+        assert main(args) == 0
+
+
+@pytest.mark.unit
+def test_analyzer_main_unexpected_exception_returns_one():
+    args = MagicMock(path="output", verbose=False)
+    with patch("src.analyzer.process_csv_files", side_effect=RuntimeError("boom")):
+        assert main(args) == 1
+
+
+@pytest.mark.unit
+def test_analyzer_cli_keyboard_interrupt_returns_zero():
+    with patch("src.analyzer.parse_arguments", side_effect=KeyboardInterrupt):
+        assert cli() == 0
+
+
+@pytest.mark.unit
+def test_analyzer_cli_unexpected_exception_returns_one():
+    with patch("src.analyzer.parse_arguments", side_effect=RuntimeError("boom")):
+        assert cli() == 1
 
 
 # ---------------------------------------------------------------------------
