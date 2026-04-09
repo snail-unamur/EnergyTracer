@@ -132,7 +132,7 @@ This design avoids redundant setup work and improves fairness across iterations.
 
 To add a new language, implement the `CodeRunner` interface (`prepare` / `run_prepared` / `cleanup`) and register the file extension in `src/runners/detect.py`.
 
-Example:
+**Usage example**:
 
 ```shell
 # Compare two files for 500 iterations using the Mac Silicon profiler,
