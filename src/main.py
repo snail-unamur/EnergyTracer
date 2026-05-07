@@ -9,6 +9,7 @@ from .measure.carbon_energy_profiler import EnergyProfiler as carbonEnergyProfil
 from .plot.generate_plots import compare_histories
 from .runners.detect import get_language_for, runner_for
 from .utilities import log
+from .utilities.cleaner import clean_artifacts
 from .utilities.parser import parse_arguments
 from .utilities.save_csv import save_history
 
@@ -229,6 +230,10 @@ def main(args, energy_profiler_cls):
 def cli():
     try:
         args = parse_arguments()
+
+        # Handle clean command
+        if args.clean:
+            return clean_artifacts(verbose=args.verbose)
 
         if args.profiler == "mac":
             if sys.platform != "darwin":

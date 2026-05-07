@@ -8,6 +8,15 @@ repos:
     - id: ruff-check
       types_or: [ python, pyi ]
       args: [ --fix ]
+      exclude: ^src/examples/
     # Run the formatter.
     - id: ruff-format
       types_or: [ python, pyi ]
+      exclude: ^src/examples/
+- repo: local
+  hooks:
+    - id: block-example-edits
+      name: block example file commits
+      entry: python scripts/block_example_edits.py
+      language: python
+      files: ^src/examples/

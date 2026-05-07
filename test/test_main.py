@@ -151,7 +151,7 @@ def test_run_profiling_with_keyboard_interrupt(
 @pytest.mark.parametrize("profiler", ["mac", "carbon"])
 @patch("src.main.parse_arguments")
 def test_cli_with_profilers_on_darwin(mock_parse, monkeypatch, profiler):
-    mock_parse.return_value = MagicMock(profiler=profiler)
+    mock_parse.return_value = MagicMock(profiler=profiler, clean=False)
     monkeypatch.setattr("sys.platform", "darwin")
 
     mock_mac_module = MagicMock()
@@ -177,7 +177,7 @@ def test_cli_with_profilers_on_darwin(mock_parse, monkeypatch, profiler):
 @pytest.mark.parametrize("platform", ["win32", "linux"])
 @patch("src.main.parse_arguments")
 def test_cli_with_mac_profiler_on_non_darwin(mock_parse, monkeypatch, platform):
-    mock_parse.return_value = MagicMock(profiler="mac")
+    mock_parse.return_value = MagicMock(profiler="mac", clean=False)
     monkeypatch.setattr("sys.platform", platform)
     assert cli() == 1
 
@@ -186,7 +186,7 @@ def test_cli_with_mac_profiler_on_non_darwin(mock_parse, monkeypatch, platform):
 @pytest.mark.parametrize("platform", ["win32", "linux"])
 @patch("src.main.parse_arguments")
 def test_cli_with_carbon_profiler_on_non_darwin(mock_parse, monkeypatch, platform):
-    mock_parse.return_value = MagicMock(profiler="carbon")
+    mock_parse.return_value = MagicMock(profiler="carbon", clean=False)
     monkeypatch.setattr("sys.platform", platform)
 
     with patch("src.main.main") as mock_main:

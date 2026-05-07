@@ -32,6 +32,7 @@
   - [Sample Report Output](#sample-report-output)
 - [Automated Measurement Script](#automated-measurement-script)
 - [Experiment Guide](#experiment-guide)
+- [Author](#author)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
 
@@ -365,6 +366,11 @@ Here is a quick summary of the key steps:
 4. **Review the results** - inspect the generated reports under `results/`, the comparison plots, and CSV files.
 
 For a printable checklist and detailed explanations of each step, refer to the [full guide](EXPERIMENT_GUIDE.md).
+
+
+## Author
+
+EnergyTracer is authored and maintained by [Florian Stormacq](https://github.com/fstormacq)
 
 
 ## Acknowledgements

@@ -77,7 +77,7 @@ For more details, please refer to the `README.md` in the reproduction repository
 ## Citation
 
 <!-- 
-If you use this dataset in your research, please cite it as follows:
+If you use this dataset in your research, please cite it as follows, replacing the appropriate fields (e.g., DOI, author name, etc.) with the actual information related to your dataset:
 
 ```bibtex
 @dataset{stormacq_2026_zenodo,

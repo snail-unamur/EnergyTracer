@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────
-# lib/ssh_setup.sh - SSH-specific setup for EnergyTracer on
+# scripts/lib/ssh_setup.sh - SSH-specific setup for EnergyTracer on
 #  macOS
 #
 # Sourced (not executed) by run_experiment.sh when an SSH

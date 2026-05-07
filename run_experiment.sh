@@ -113,10 +113,10 @@ OUTPUT_DIR="output"
 # ── SSH detection & setup ─────────────────────────────────
 # $SSH_CLIENT / $SSH_TTY / $SSH_CONNECTION are set by sshd and
 # inherited by tmux child processes - they survive detach/reattach.
-# When detected, we source lib/ssh_setup.sh which handles:
+# When detected, we source scripts/lib/ssh_setup.sh which handles:
 #   - sudo persistence (NOPASSWD sudoers rule for powermetrics)
 #   - caffeinate (prevents both idle sleep and background CPU throttling)
-# See lib/ssh_setup.sh for the full rationale.
+# See scripts/lib/ssh_setup.sh for the full rationale.
 
 IS_SSH=0
 if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] || [ -n "$SSH_CONNECTION" ]; then
@@ -126,8 +126,8 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 if [ "$IS_SSH" = "1" ] && echo "$PROFILERS" | grep -q mac; then
-    # shellcheck source=lib/ssh_setup.sh
-    . "$SCRIPT_DIR/lib/ssh_setup.sh" || exit 1
+    # shellcheck source=scripts/lib/ssh_setup.sh
+    . "$SCRIPT_DIR/scripts/lib/ssh_setup.sh" || exit 1
 fi
 
 # ── Helpers ──────────────────────────────────────────────

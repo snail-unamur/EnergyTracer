@@ -68,6 +68,11 @@ def parse_main_arguments():
         action="store_true",
         help="Enable verbose output during profiling.",
     )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Remove generated artifacts (output, htmlcov, caches) instead of running profiling.",
+    )
 
     return parser.parse_args()
 
