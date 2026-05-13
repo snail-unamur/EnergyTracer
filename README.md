@@ -375,8 +375,7 @@ EnergyTracer is authored and maintained by [Florian Stormacq](https://github.com
 
 ## Acknowledgements
 
-This project was developed as part of a Master's degree in Computer Science at the University of Namur, Belgium.
-
+This project was developed as part of a Master's degree in Computer Science at the [University of Namur, Belgium](https://www.unamur.be), under the supervision of the [snail research group](https://www.unamur.be). I am particularly grateful to [Prof. Devroey](https://snail.info.unamur.be/author/xavier-devroey/), [Prof. Vanderose](https://snail.info.unamur.be/author/benoit-vanderose/), and [Jérome Maquoi](https://snail.info.unamur.be/author/jerome-maquoi/) for their guidance and support.
 
 ## License
 
